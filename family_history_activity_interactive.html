@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical testing - Family history activity</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Main palette - soft blue, keeps the reference vibe but lighter for readability at full-page scale */
+  --slate:#25383F; --slate-d:#1A272C; --slate-m:#4A5D66;
+  --accent:#3A6B7D; --accent-l:#DCECF3; --accent-d:#1F4552;
+  --bg:#EDF4FA; --bg-soft:#F5F9FC; --white:#FFFFFF;
+  --coral:#B15538; --coral-l:#F5E3DA;
+  --amber:#6F4D14; --amber-l:#F0E2C5;
+  --gray-l:#E0E6EB;
+  --text:#1A262C; --muted:#5A6B75; --faint:#92A2AC;
+  --border:rgba(37,56,63,0.14);
+  --r:10px;
+  --font-d:'Lora',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+}
+
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:17px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+.app{max-width:760px;margin:0 auto;padding:28px 22px 70px;min-height:100vh}
+
+/* HEADINGS */
+h1{font-family:var(--font-d);font-size:34px;font-weight:600;color:var(--slate);line-height:1.15;margin-bottom:14px;letter-spacing:-0.01em}
+h2{font-family:var(--font-d);font-size:26px;font-weight:600;color:var(--slate);line-height:1.2;margin-bottom:12px;margin-top:14px;letter-spacing:-0.005em}
+h3{font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--slate);margin-bottom:8px}
+h4{font-family:var(--font-d);font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px}
+.kicker{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:8px}
+
+.lead{font-size:17px;color:var(--slate-m);line-height:1.65;margin-bottom:24px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:var(--r);font-family:var(--font-b);font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s ease;text-decoration:none;min-height:48px}
+.btn-primary{background:var(--slate);color:white;box-shadow:0 1px 2px rgba(37,56,63,0.12)}
+.btn-primary:hover{background:var(--slate-d);box-shadow:0 3px 8px rgba(37,56,63,0.18)}
+.btn-secondary{background:var(--white);color:var(--slate);border:1.5px solid var(--slate)}
+.btn-secondary:hover{background:var(--accent-l)}
+.btn-ghost{background:transparent;color:var(--slate-m);padding:10px 16px;font-size:14px;font-weight:500}
+.btn-ghost:hover{color:var(--text);background:var(--white)}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+
+/* INTRO BOXES */
+.intro-box{background:var(--white);border-left:4px solid var(--accent);border-radius:var(--r);padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.intro-box p{color:var(--slate);font-size:15.5px;line-height:1.6}
+.intro-box strong{color:var(--slate-d)}
+
+/* LANDING CARDS */
+.cards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
+@media (min-width:640px){.cards{grid-template-columns:1fr 1fr 1fr;gap:16px}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;text-align:left;font-family:var(--font-b);transition:all 0.15s ease;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(37,56,63,0.10);transform:translateY(-1px)}
+.card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent)}
+.card h3{font-size:18px;color:var(--text);margin-bottom:4px}
+.card p{font-size:14.5px;color:var(--slate-m);line-height:1.55;flex-grow:1}
+.card-arrow{color:var(--accent);font-size:13px;font-weight:600;margin-top:10px}
+
+/* PROGRESS */
+.progress{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.progress-back{font-size:14px;color:var(--slate-m);cursor:pointer;background:none;border:none;padding:6px 10px;margin-left:-10px;border-radius:6px;font-family:var(--font-b);font-weight:500}
+.progress-back:hover{color:var(--text);background:var(--white)}
+.progress-text{font-size:13px;color:var(--slate-m);margin-left:auto;font-weight:500}
+.progress-bar{flex:1;height:5px;background:var(--gray-l);border-radius:3px;overflow:hidden;max-width:240px}
+.progress-fill{height:100%;background:var(--accent);transition:width 0.3s ease}
+
+/* QUESTIONS */
+.q-block{margin-bottom:24px}
+.q-num{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:8px}
+.q-text{font-family:var(--font-d);font-size:20px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:10px}
+.q-hint{font-size:14.5px;color:var(--slate-m);margin-bottom:14px;font-style:italic;line-height:1.6}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-opt{display:flex;align-items:flex-start;gap:12px;font-size:15.5px;line-height:1.45;color:var(--text);padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);transition:all 0.12s ease;font-family:var(--font-b);text-align:left;width:100%}
+.q-opt:hover{border-color:var(--accent);background:var(--accent-l)}
+.q-opt.selected{border-color:var(--accent);background:var(--accent-l)}
+.q-opt.correct{border-color:var(--accent);background:var(--accent-l)}
+.q-opt.incorrect{border-color:var(--coral);background:var(--coral-l)}
+.q-opt.correct-answer{border-color:var(--accent);background:var(--accent-l);font-weight:500}
+.q-opt:disabled{cursor:default}
+.q-opt .radio{display:inline-block;width:18px;height:18px;border:1.5px solid var(--faint);border-radius:50%;flex-shrink:0;margin-top:2px;position:relative}
+.q-opt.selected .radio{border-color:var(--accent)}
+.q-opt.selected .radio::after{content:'';position:absolute;top:3px;left:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.q-opt.correct .radio,.q-opt.correct-answer .radio{border-color:var(--accent)}
+.q-opt.correct .radio::after,.q-opt.correct-answer .radio::after{content:'';position:absolute;top:3px;left:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.q-opt.incorrect .radio{border-color:var(--coral)}
+.q-opt.incorrect .radio::after{content:'';position:absolute;top:3px;left:3px;width:9px;height:9px;border-radius:50%;background:var(--coral)}
+
+/* FEEDBACK (for practice cases) */
+.feedback{margin-top:14px;padding:16px 18px;border-radius:10px;font-size:14.5px;line-height:1.6;animation:fadeIn 0.25s ease}
+.feedback.correct{background:var(--accent-l);border-left:4px solid var(--accent);color:var(--slate-d)}
+.feedback.incorrect{background:var(--coral-l);border-left:4px solid var(--coral);color:var(--text)}
+.feedback strong{font-weight:600}
+.feedback-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;display:block}
+.feedback.correct .feedback-label{color:var(--accent-d)}
+.feedback.incorrect .feedback-label{color:var(--coral)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* FAMILY TREE */
+.profile-header{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:16px 20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.profile-name{font-family:var(--font-d);font-size:18px;font-weight:600;color:var(--slate);margin-bottom:4px}
+.profile-meta{font-size:14.5px;color:var(--slate-m);line-height:1.55}
+
+.family-tree{display:flex;flex-direction:column;gap:10px;margin:18px 0}
+.family-gen{display:flex;gap:10px;flex-wrap:wrap}
+.family-member{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;flex:1;min-width:160px;box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.fm-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--faint);margin-bottom:3px}
+.fm-name{font-weight:600;color:var(--text);margin-bottom:3px;font-size:14.5px}
+.fm-detail{color:var(--slate-m);font-size:13.5px;line-height:1.45}
+.fm-flag{color:var(--coral);font-weight:600}
+
+/* TASK INSTRUCTION */
+.instruction-box{background:var(--amber-l);border-left:4px solid var(--amber);border-radius:var(--r);padding:16px 18px;margin:18px 0}
+.instruction-box p{color:var(--amber);font-size:14.5px;line-height:1.6}
+
+/* SUMMARY / RESULTS */
+.summary-header{background:var(--white);border-left:4px solid var(--accent);border-radius:var(--r);padding:20px 22px;margin-bottom:20px;box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.summary-header .kicker{color:var(--accent-d);margin-bottom:6px}
+.summary-header h2{color:var(--slate);margin-top:0;margin-bottom:6px}
+.summary-header p{font-size:15.5px;color:var(--text);line-height:1.55}
+
+.score-big{display:flex;align-items:baseline;gap:12px;margin-top:12px}
+.score-num{font-family:var(--font-d);font-size:44px;font-weight:600;color:var(--accent);line-height:1}
+.score-label{font-size:14px;color:var(--text);line-height:1.4}
+
+.answer-block{border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;background:var(--white);box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.answer-block.present{border-left:4px solid var(--coral);background:var(--coral-l)}
+.answer-block.not-present{border-left:4px solid var(--accent);background:var(--accent-l)}
+.ab-tag{display:inline-block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:3px 9px;border-radius:100px;margin-bottom:7px}
+.ab-tag.present{background:var(--coral);color:white}
+.ab-tag.not-present{background:var(--accent);color:white}
+.ab-name{font-family:var(--font-d);font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.ab-answer{font-size:14.5px;color:var(--text);line-height:1.6}
+.ab-answer strong{color:var(--coral)}
+.answer-block.not-present .ab-answer strong{color:var(--accent-d)}
+
+/* TAKEAWAY / NEXT STEP BOX */
+.next-step-box{background:var(--slate);color:white;border-radius:var(--r);padding:22px 24px;margin-top:22px;box-shadow:0 2px 6px rgba(37,56,63,0.12)}
+.next-step-box h4{color:white;margin-bottom:10px;font-family:var(--font-d);font-size:17px}
+.next-step-box p{font-size:15px;line-height:1.65;opacity:0.95;margin-bottom:10px;color:white}
+.next-step-box p:last-child{margin-bottom:0}
+.next-step-box a{color:var(--accent-l);text-decoration:underline}
+.next-step-box strong{color:white;font-weight:600}
+
+/* CLOSING RESOURCES */
+.closing-resources{background:var(--white);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.closing-resources h4{color:var(--slate);margin-bottom:10px;font-size:16px}
+.closing-resources p{font-size:14.5px;line-height:1.6;color:var(--text);margin-bottom:10px}
+.closing-resources p:last-child{margin-bottom:0}
+.closing-resources a{color:var(--accent-d);text-decoration:underline;word-break:break-word}
+
+/* PRIVACY NOTE */
+.privacy-note{font-size:13px;color:var(--slate-m);text-align:center;margin-top:32px;padding-top:18px;border-top:1px solid var(--border);font-style:italic}
+
+/* FLAGGED RECAP (on own-family results) */
+.recap-wrap{margin:22px 0 24px;padding:20px 22px;background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.recap-heading{font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--slate);margin-bottom:8px}
+.recap-intro{font-size:14.5px;line-height:1.6;color:var(--slate-m);margin-bottom:18px;font-style:italic}
+.recap-panel{padding:16px 18px;background:var(--bg-soft);border-radius:10px;border-left:4px solid var(--accent);margin-bottom:14px}
+.recap-panel:last-child{margin-bottom:0}
+.recap-qref{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:6px}
+.recap-title{font-family:var(--font-d);font-size:17px;font-weight:600;color:var(--slate);margin-bottom:12px;line-height:1.3}
+.recap-body > p{font-size:14.5px;line-height:1.6;color:var(--text);margin-bottom:12px}
+.recap-body > p:last-child{margin-bottom:0}
+.recap-body .explainer-group{margin-bottom:12px;padding:12px 14px;background:var(--white);border-radius:8px;border-left:3px solid var(--accent);box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.recap-body .explainer-group:last-of-type{margin-bottom:10px}
+.recap-body .lm-figure{margin:4px auto 14px;padding:12px 10px;background:var(--white);border-radius:10px;border:1px solid var(--border)}
+
+/* LEARN MORE (per-question) */
+.learn-more{margin-top:18px;border-radius:14px;background:var(--white);border:1px dashed var(--accent);overflow:hidden;transition:all 0.2s ease}
+.learn-more[open]{border-style:solid;box-shadow:0 3px 10px rgba(37,56,63,0.08)}
+.learn-more > summary{cursor:pointer;padding:12px 18px;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:background 0.15s ease;font-family:var(--font-b);color:var(--accent-d)}
+.learn-more > summary::-webkit-details-marker{display:none}
+.learn-more > summary:hover{background:var(--accent-l)}
+.lm-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--accent);color:white;border-radius:50%;flex-shrink:0;transition:transform 0.3s ease}
+.lm-icon svg{width:16px;height:16px}
+.learn-more[open] .lm-icon{transform:rotate(8deg) scale(1.08);background:var(--slate)}
+.lm-label{font-size:14.5px;font-weight:600;letter-spacing:0.01em;flex:1}
+.learn-more[open] .lm-label::after{content:' (tap to close)';font-weight:500;color:var(--slate-m);font-size:12.5px}
+.lm-caret{width:8px;height:8px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(45deg);margin-top:-4px;transition:transform 0.25s ease;flex-shrink:0}
+.learn-more[open] .lm-caret{transform:rotate(-135deg);margin-top:2px}
+.lm-body{padding:6px 20px 20px;border-top:1px solid var(--border);background:var(--bg-soft);animation:fadeIn 0.25s ease}
+.lm-title{font-family:var(--font-d);font-size:17px;font-weight:600;color:var(--slate);margin:14px 0 12px;line-height:1.3}
+.lm-body > p{font-size:15px;line-height:1.6;color:var(--text);margin-bottom:14px}
+.lm-figure{margin:6px auto 18px;padding:14px 12px;background:var(--white);border-radius:10px;border:1px solid var(--border);max-width:100%;display:block}
+.lm-figure svg{width:100%;height:auto;display:block;max-width:520px;margin:0 auto}
+
+/* Shared explainer-group + note classes (used by learn-more content) */
+.explainer-group{margin-bottom:14px;padding:14px 16px;background:var(--white);border-radius:10px;border-left:3px solid var(--accent);box-shadow:0 1px 2px rgba(37,56,63,0.04)}
+.explainer-group:last-of-type{margin-bottom:12px}
+.explainer-group h5{font-family:var(--font-d);font-size:15.5px;font-weight:600;color:var(--slate);margin-bottom:8px}
+.explainer-group p{font-size:14.5px;line-height:1.6;color:var(--text);margin-bottom:10px}
+.explainer-group p:last-child{margin-bottom:0}
+.explainer-group ul{list-style:none;padding:0;margin:0}
+.explainer-group li{font-size:14.5px;line-height:1.55;color:var(--text);padding:5px 0 5px 18px;position:relative}
+.explainer-group li::before{content:'';position:absolute;left:4px;top:12px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.explainer-group em{font-style:italic;color:var(--slate)}
+.explainer-note{font-size:14.5px;line-height:1.6;color:var(--slate-m);font-style:italic;margin-top:10px;padding:10px 14px;background:var(--white);border-radius:8px;border-left:3px solid var(--amber)}
+
+/* NAV (bottom of activity pages) */
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:30px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* SECTION HEADER for parts of the worksheet */
+.section-intro{margin-bottom:20px}
+
+/* UTILITY */
+.hidden{display:none !important}
+.spacer-sm{height:10px}
+.spacer-md{height:20px}
+
+/* FOCUS */
+button:focus-visible,.card:focus-visible,.q-opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* SMOOTH SCROLL TO TOP ON NAVIGATION */
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Content rendered by JS -->
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONTENT: all worksheet text, cases, questions, answers
+// ═══════════════════════════════════════════════════════════
+
+// LEARN_MORE content is shared between the own-family path and the practice
+// cases. The six entries correspond 1:1 with the six questions in each flow.
+const LEARN_MORE = [
+  {
+    title: 'Why do some conditions run in families?',
+    body: `
+      <p>Not every condition that shows up in a family is 100% due to genetic factors. It helps to know the difference between these two groups:</p>
+      <div class="explainer-group">
+        <h5>Genetic</h5>
+        <p>A change in one specific gene is the main reason someone has the condition. These tend to follow clear family patterns. Examples:</p>
+        <ul>
+          <li>Cystic fibrosis</li>
+          <li>Sickle cell disease</li>
+          <li>Huntington disease</li>
+          <li>Certain breast, ovarian, or bowel cancers that run in families (like those linked to <em>BRCA</em> or Lynch syndrome)</li>
+          <li>Some inherited heart conditions</li>
+          <li>Muscular dystrophy</li>
+        </ul>
+      </div>
+      <div class="explainer-group">
+        <h5>Multifactorial</h5>
+        <p>"Multifactorial" means <em>many factors</em>. Genes play a part, but so do age, weight, diet, exercise, smoking, stress, and environment. These can show up in a family because relatives share habits and surroundings, not just genes. Examples:</p>
+        <ul>
+          <li>Type 2 diabetes</li>
+          <li>Most heart attacks and strokes</li>
+          <li>High blood pressure</li>
+          <li>Most cancers (only a small share are strongly inherited)</li>
+          <li>Asthma and allergies</li>
+          <li>Depression and anxiety</li>
+          <li>Obesity</li>
+        </ul>
+      </div>
+      <p class="explainer-note">Why "same side" matters: we inherit half our genes from each parent's side. A condition that keeps showing up on <em>one</em> side is more likely to be about a gene passed down, not chance.</p>
+    `,
+  },
+  {
+    title: 'Why does age matter so much?',
+    body: `
+      <p>Think of a condition like a bucket slowly filling up. Things like age, lifestyle, and environment add drops over time. For most people it takes many decades for the bucket to fill. But when someone is born with a genetic change, the bucket could be already half full, so it fills up much sooner. That is why a condition showing up young can be a clue that genes are playing a bigger role than usual.</p>
+      <div class="explainer-group">
+        <h5>Rough age guides by type</h5>
+        <p>These are not hard rules, just general signals that a condition is showing up younger than usual:</p>
+        <p><strong>Cancers</strong></p>
+        <ul>
+          <li>Breast cancer before age 50</li>
+          <li>Bowel (colon) cancer before age 50</li>
+          <li>Prostate cancer before age 55</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Heart and blood vessels</strong></p>
+        <ul>
+          <li>Heart attack in a man before 55, or a woman before 65</li>
+          <li>Sudden, unexplained cardiac arrest at any young age</li>
+          <li>Stroke before age 50</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Brain</strong></p>
+        <ul>
+          <li>Dementia before age 60</li>
+        </ul>
+      </div>
+      <p class="explainer-note">The bigger idea: when something shows up a lot younger than you would expect, it can be worth a closer look.</p>
+    `,
+  },
+  {
+    title: 'Why does an unexpected sex matter?',
+    body: `
+      <p>Some conditions are much more common in one sex. When they show up in the other sex, it can be a clue that genes are playing a bigger role than usual.</p>
+      <div class="explainer-group">
+        <h5>A few examples</h5>
+        <ul>
+          <li><strong>Breast cancer in a man</strong> - very rare. A man with breast cancer, especially in a family with other cancers, can point to an inherited gene change (like in <em>BRCA2</em>).</li>
+        </ul>
+      </div>
+      <p class="explainer-note">This question is about biological sex, and only for a small number of conditions where the difference is very clear.</p>
+    `,
+  },
+  {
+    title: 'What does "without the usual causes" mean?',
+    body: `
+      <p>Many common conditions come with well-known risk factors. When a person gets one of these conditions but does not fit the usual profile, it can be a sign that something else - sometimes genes - is driving it.</p>
+      <div class="explainer-group">
+        <h5>A few examples of "surprising" patterns</h5>
+        <ul>
+          <li>A fit, healthy young adult with a sudden, serious heart problem</li>
+          <li>A thin, active person with type 2 diabetes and no family members who have it</li>
+          <li>Someone who has never smoked developing lung cancer at a young age</li>
+          <li>Very high cholesterol in a young, healthy-eating person</li>
+          <li>Early hearing loss in someone with no loud-noise exposure</li>
+        </ul>
+      </div>
+      <p class="explainer-note">When the usual story does not fit, it is one reason a genetic counsellor might ask more questions.</p>
+    `,
+  },
+  {
+    title: 'Why does ancestry come up?',
+    body: `
+      <p>Some inherited conditions are more common in people from specific ancestries. This is because of history: small groups of ancestors passing down the same gene changes over generations. It is not a comment on any group - it is just useful background information.</p>
+      <div class="explainer-group">
+        <h5>A few examples of conditions more common in certain backgrounds</h5>
+        <ul>
+          <li><strong>Ashkenazi Jewish</strong> - Tay-Sachs disease, Canavan disease, certain <em>BRCA</em> gene changes</li>
+          <li><strong>African, Mediterranean, Middle Eastern, South Asian, Southeast Asian</strong> - sickle cell disease and thalassemia</li>
+          <li><strong>French Canadian, Cajun</strong> - Tay-Sachs disease and a few others</li>
+          <li><strong>Finnish</strong> - a small group of rare inherited conditions</li>
+        </ul>
+      </div>
+      <div class="explainer-group">
+        <h5>Why related parents come up too</h5>
+        <p>In some families and cultures, parents are related to each other (for example, cousins). This is common in many parts of the world and is not a problem on its own.</p>
+        <p>Here's why doctors like to know: we all carry a small number of "hidden" gene changes that don't affect us but could cause a condition if a child got the same change from both parents. When parents are related, they're more likely to share the same hidden gene changes, so there's a slightly higher chance a child could inherit the same one twice. It doesn't mean anything will happen - it just helps doctors know what to think about.</p>
+      </div>
+      <p class="explainer-note">Both of these are neutral pieces of background. They do not mean anything is wrong.</p>
+    `,
+  },
+  {
+    title: 'Why miscarriage, infant death, and infertility come up in family history',
+    body: `
+      <p>These experiences are common, and most of the time they are not about genes. But when they happen more than once in a family, or without a clear cause, genes are sometimes part of the picture. This is one of the more sensitive questions a genetic counsellor asks, and they ask gently.</p>
+      <div class="explainer-group">
+        <h5>Why it is worth noting</h5>
+        <ul>
+          <li><strong>Repeated miscarriages</strong> can sometimes be linked to chromosome differences that one parent carries without any other signs</li>
+          <li><strong>Stillbirth or early infant death without a clear cause</strong> can occasionally point to an inherited condition</li>
+          <li><strong>Babies born with physical differences that were never explained</strong> may fit a genetic pattern that no one connected at the time</li>
+          <li><strong>Trouble getting pregnant with no known cause</strong> can sometimes have a genetic piece to it</li>
+        </ul>
+      </div>
+      <p class="explainer-note">Most of the time, these things have nothing to do with genes. This question is just making sure nothing is missed if there is a pattern.</p>
+    `,
+  },
+];
+
+const OWN_QUESTIONS = [
+  {
+    text: "Does the same condition - or a group of related conditions - show up in more than one person on the same side of your family?",
+    hint: "Think about conditions that show up in more than one person on the same side of the family (all on the mother's side or all on the father's side), or that seem to pass from one generation to the next. Related conditions count too - for example: breast and ovarian cancer can be linked; colon cancer and cancer of the uterus can be linked; different kinds of heart problems in the same family can be linked.",
+    options: [
+      "Yes - the same or related condition in more than one relative",
+      "No - each relative has had different or unrelated conditions",
+      "I don't know enough about the family history to say",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0],
+    categories: ['health-risk'],
+    learnMoreIndex: 0,
+  },
+  {
+    text: "Has anyone in your family been diagnosed with a condition much earlier in life than you would normally expect?",
+    hint: "Think about conditions that usually show up later in life but happened to someone young. Rough guides: breast or bowel (colon) cancer before 50, prostate cancer before 55, heart attack in a man before 55 or a woman before 65, stroke before 50, dementia before 60. These are not hard rules - the bigger idea is that when something shows up a lot younger than you would expect, it can be a clue.",
+    options: [
+      "Yes - a condition showed up much earlier than expected",
+      "No - diagnoses in the family happened at usual ages",
+      "I don't know the ages when people were diagnosed",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0],
+    categories: ['health-risk'],
+    learnMoreIndex: 1,
+  },
+  {
+    text: "Has anyone in your family had a condition that is usually seen in the other sex?",
+    hint: "Some conditions almost always happen to one sex. For example, breast cancer is very rare in men - so a man with breast cancer is worth noticing. Think about whether any diagnosis in the family was surprising given whether the person was male or female.",
+    options: [
+      "Yes - a condition showed up in the sex where it is rare",
+      "No",
+      "I'm not sure",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0],
+    categories: ['health-risk'],
+    learnMoreIndex: 2,
+  },
+  {
+    text: "Has anyone in your family - or you - developed a condition without the usual causes that normally explain it?",
+    hint: "Some examples: a fit, active young person who has a sudden serious heart problem; or someone with diabetes who does not have the usual risk factors for it. When the usual causes do not seem to fit, genes are sometimes worth looking at.",
+    options: [
+      "Yes - a condition showed up without the usual causes",
+      "No - conditions in the family have clear causes",
+      "I'm not sure",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0],
+    categories: ['diagnosis'],
+    learnMoreIndex: 3,
+  },
+  {
+    text: "Is there anything about your family's background that might be helpful for a doctor to know?",
+    hint: "Two kinds of things can be useful to share. First: some conditions are more common in people from certain backgrounds - for example, Tay-Sachs disease in people with Ashkenazi Jewish background, or sickle cell disease and thalassemia in people with African, Mediterranean, Middle Eastern, or South and Southeast Asian background. Second: in some families and cultures, parents are biological relatives - for example, cousins. Neither of these is a problem on its own - they are just useful information for a doctor to have.",
+    options: [
+      "Yes - one or both of these apply to my family",
+      "Maybe - I'm not sure if something applies",
+      "No / does not apply",
+      "I don't know enough about the family background to say",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0, 1],
+    categories: ['carrier'],
+    learnMoreIndex: 4,
+  },
+  {
+    text: "Has your family had more than one miscarriage, a baby born with physical differences that were never explained, a child who died very young without a clear reason, or trouble having children with no known cause?",
+    hint: "Some examples: a baby born with a heart problem that was not explained, three or more miscarriages in a row, a baby who died before birth, a child who died as a baby without a clear reason, or trouble getting pregnant with no known cause.",
+    options: [
+      "Yes - one or more of these apply",
+      "No",
+      "I'm not sure",
+      "Prefer not to answer",
+    ],
+    yesIndices: [0],
+    categories: ['carrier', 'diagnosis'],
+    learnMoreIndex: 5,
+  },
+];
+
+const CASE_A = {
+  name: "Smith",
+  title: "The Smith family",
+  profileName: "Sarah Smith",
+  profileMeta: "38 years old, seeing her doctor for a checkup. Thinking about starting a family.",
+  tree: [
+    [
+      { label: "Mom's mom", name: "Rose, died at 71", detail: "Never had cancer" },
+      { label: "Mom's dad", name: "Charles, died at 68", detail: "Heart disease" },
+    ],
+    [
+      { label: "Mom", name: "Linda, died at 47", detail: "Had breast cancer at 42", flag: true },
+      { label: "Mom's sister (aunt)", name: "Janet, age 55", detail: "Had ovarian cancer at 51", flag: true },
+      { label: "Mom's brother (uncle)", name: "Mark, age 60", detail: "Healthy" },
+    ],
+    [
+      { label: "Sarah (this is her)", name: "Sarah, age 38", detail: "Healthy. Planning to start a family this year." },
+      { label: "Sister", name: "Emma, age 35", detail: "Healthy. Two children." },
+    ],
+  ],
+  questions: [
+    {
+      text: "Does the same condition - or a group of related conditions - show up in more than one person on the same side of Sarah's family?",
+      options: [
+        "Yes - the same or related condition in more than one relative",
+        "No - each relative has had different or unrelated conditions",
+        "I don't know enough about the family history to say",
+      ],
+      learnMoreIndex: 0,
+      correct: 0,
+      isPresent: true,
+      summaryName: "More than one family member with the same kind of condition",
+      explanation: "Sarah's mom had breast cancer and her aunt (on her mom's side) had ovarian cancer. Breast and ovarian cancer can be linked, because some of the same genes (like BRCA1 and BRCA2) raise the chance of both. Both women are on the same side of the family - Sarah's mom's side - which also fits the pattern of a gene being passed down that side. A genetic counsellor would ask a few more questions about other relatives to see the fuller picture.",
+    },
+    {
+      text: "Has anyone in Sarah's family been diagnosed with a condition much earlier in life than you would normally expect?",
+      options: [
+        "Yes - a condition showed up much earlier than expected",
+        "No - diagnoses in the family happened at usual ages",
+        "I don't know the ages when people were diagnosed",
+      ],
+      learnMoreIndex: 1,
+      correct: 0,
+      isPresent: true,
+      summaryName: "A condition that starts earlier in life than usual",
+      explanation: "Sarah's mom had breast cancer at 42. Most people diagnosed with breast cancer are in their 60s, so 42 is noticeably younger. A rough guide is that breast cancer before age 50 is a reason to look more closely at family history. Sarah's aunt's ovarian cancer at 51 is also on the younger side - most ovarian cancer is diagnosed after 60. Two cancers in this age range, on the same side of the family, is a stronger clue than either one alone.",
+    },
+    {
+      text: "Has anyone in Sarah's family had a condition that is usually seen in the other sex?",
+      options: [
+        "Yes - a condition showed up in the sex where it is rare",
+        "No",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 2,
+      correct: 1,
+      isPresent: false,
+      summaryName: "A condition in the sex where it is rare",
+      explanation: "The cancers in this family were in women. Both breast and ovarian cancer are much more common in women, so neither one is unusual for the sex of the person who had it. This question is for situations like a man with breast cancer, which is rare. If that showed up in Sarah's family too, it would add to the picture.",
+    },
+    {
+      text: "Has anyone in Sarah's family developed a condition without the usual causes that normally explain it?",
+      options: [
+        "Yes - a condition showed up without the usual causes",
+        "No - conditions in the family have clear causes",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 3,
+      correct: 1,
+      isPresent: false,
+      summaryName: "A condition with no clear cause",
+      explanation: "This question fits better with conditions like heart attacks in a young, active person, or type 2 diabetes in someone with no known risk factors - situations where the usual story does not explain what happened. The cancers in Sarah's family are not the kind of thing this question is aimed at.",
+    },
+    {
+      text: "Is there anything about Sarah's family background that might be helpful for a doctor to know?",
+      options: [
+        "Yes - one or both things apply",
+        "Maybe - not sure if something applies",
+        "No / does not apply",
+        "I don't know enough about the family background to say",
+      ],
+      learnMoreIndex: 4,
+      correct: 2,
+      isPresent: false,
+      summaryName: "Family background",
+      explanation: "The family history we can see does not mention an ancestry where certain conditions are more common (like Ashkenazi Jewish, Mediterranean, South Asian, Middle Eastern, African, or others), and does not mention that any relatives are biologically related to each other. A genetic counsellor would still usually ask about these to have the full picture - even if the answer is no.",
+    },
+    {
+      text: "Has Sarah's family had more than one miscarriage, a baby born with physical differences that were never explained, a child who died very young without a clear reason, or trouble having children with no known cause?",
+      options: [
+        "Yes - one or more of these apply",
+        "No",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 5,
+      correct: 1,
+      isPresent: false,
+      summaryName: "Unexplained pregnancy loss, infant death, or trouble having children",
+      explanation: "Nothing in this family history points to this - no repeated miscarriages, no unexplained infant death, no trouble having children, no unexplained physical differences at birth. A genetic counsellor would still ask gently about these, because they are common enough that people sometimes do not think to mention them.",
+    },
+  ],
+  takeaway: {
+    title: "How this family connects to genetic testing",
+    paragraphs: [
+      "Two things stand out here. Sarah's mom had breast cancer young, and her aunt on the same side had ovarian cancer. Breast and ovarian cancer can be linked. Seeing both on the same side of a family is one pattern that fits with <strong>health risk</strong> testing - looking at whether a gene change in the family raises the chance of these cancers.",
+      "Because Sarah is thinking about starting a family, there is also a <strong>carrier status</strong> side to this. If a gene change were found, it could be useful information for her own health, and for thinking about whether it could be passed on. None of this means testing is the right choice for Sarah. It just shows how both categories could connect to the same family.",
+      "In Ontario, the <strong>High Risk Ontario Breast Screening Program</strong> is one place where this kind of family history can be looked at. It is for people aged 30 to 69 with a family history of breast or ovarian cancer who have not had cancer themselves. It includes genetic counselling and, for people who qualify, yearly breast screening with a mammogram and MRI.",
+      'More info: <a href="https://www.ontario.ca/page/breast-cancer-testing-and-prevention" target="_blank" rel="noopener">ontario.ca/page/breast-cancer-testing-and-prevention</a>',
+    ],
+  },
+};
+
+const CASE_B = {
+  name: "Martin",
+  title: "The Martin family",
+  profileName: "David Martin",
+  profileMeta: "44 years old, seeing his doctor after his brother was recently diagnosed with a heart condition.",
+  tree: [
+    [
+      { label: "Dad's dad", name: "Edward, died at 55", detail: "Died suddenly of a heart problem", flag: true },
+      { label: "Dad's mom", name: "Alice, age 78", detail: "Healthy" },
+    ],
+    [
+      { label: "Dad", name: "Joseph, died at 48", detail: "Had a heart attack at 48", flag: true },
+      { label: "Dad's sister (aunt)", name: "Nancy, age 62", detail: "High blood pressure" },
+    ],
+    [
+      { label: "David (this is him)", name: "David, age 44", detail: "Healthy. Worried about his family history after his brother's recent diagnosis." },
+      { label: "Brother", name: "Chris, age 40", detail: "Diagnosed with a heart condition at 40", flag: true },
+      { label: "Sister", name: "Anna, age 38", detail: "Healthy, has not been tested" },
+    ],
+  ],
+  questions: [
+    {
+      text: "Does the same condition - or a group of related conditions - show up in more than one person on the same side of David's family?",
+      options: [
+        "Yes - the same or related condition in more than one relative",
+        "No - each relative has had different or unrelated conditions",
+        "I don't know enough about the family history to say",
+      ],
+      learnMoreIndex: 0,
+      correct: 0,
+      isPresent: true,
+      summaryName: "More than one family member with the same kind of condition",
+      explanation: "Three people on David's dad's side have had serious heart problems. His grandfather died suddenly from a heart problem. His dad had a heart attack at 48. His brother was just diagnosed with a heart condition at 40. Same side of the family, three generations in a row - that is the kind of pattern that catches a genetic counsellor's attention, because it suggests a gene that is being passed down.",
+    },
+    {
+      text: "Has anyone in David's family been diagnosed with a condition much earlier in life than you would normally expect?",
+      options: [
+        "Yes - a condition showed up much earlier than expected",
+        "No - diagnoses in the family happened at usual ages",
+        "I don't know the ages when people were diagnosed",
+      ],
+      learnMoreIndex: 1,
+      correct: 0,
+      isPresent: true,
+      summaryName: "A condition that starts earlier in life than usual",
+      explanation: "David's dad had a heart attack at 48. In men, heart attack before age 55 is a rough guide for \"younger than usual.\" David's brother was diagnosed with a heart condition at 40 - young enough that most doctors would want to know more. And David's grandfather died suddenly from a heart problem. Any sudden cardiac event at a young age is worth a closer look, whatever the exact age. Put together, these fit the pattern of an inherited heart condition.",
+    },
+    {
+      text: "Has anyone in David's family had a condition that is usually seen in the other sex?",
+      options: [
+        "Yes - a condition showed up in the sex where it is rare",
+        "No",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 2,
+      correct: 1,
+      isPresent: false,
+      summaryName: "A condition in the sex where it is rare",
+      explanation: "Heart attacks and sudden heart problems are common in men, so seeing them in men does not count as \"unexpected for the sex.\" This question is for cases like a man with breast cancer, where the condition itself is very rare in that sex. Nothing like that is going on in the Martin family.",
+    },
+    {
+      text: "Has anyone in David's family developed a condition without the usual causes that normally explain it?",
+      options: [
+        "Yes - a condition showed up without the usual causes",
+        "No - conditions in the family have clear causes",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 3,
+      correct: 1,
+      isPresent: false,
+      summaryName: "A condition with no clear cause",
+      explanation: "The family history does not tell us whether David's dad or grandfather had the usual risk factors for heart problems, like high blood pressure, high cholesterol, smoking, or weight. For this question to apply, we would need to know their heart problems happened in someone who did not fit the usual profile. This is one of the first things a genetic counsellor would ask more about.",
+    },
+    {
+      text: "Is there anything about David's family background that might be helpful for a doctor to know?",
+      options: [
+        "Yes - one or both things apply",
+        "Maybe - not sure if something applies",
+        "No / does not apply",
+        "I don't know enough about the family background to say",
+      ],
+      learnMoreIndex: 4,
+      correct: 2,
+      isPresent: false,
+      summaryName: "Family background",
+      explanation: "The family history we can see does not mention an ancestry where certain conditions are more common (like Ashkenazi Jewish, Mediterranean, South Asian, Middle Eastern, African, or others), and does not mention that any relatives are biologically related to each other. A genetic counsellor would still usually ask about these to have the full picture - even if the answer is no.",
+    },
+    {
+      text: "Has David's family had more than one miscarriage, a baby born with physical differences that were never explained, a child who died very young without a clear reason, or trouble having children with no known cause?",
+      options: [
+        "Yes - one or more of these apply",
+        "No",
+        "I'm not sure",
+      ],
+      learnMoreIndex: 5,
+      correct: 1,
+      isPresent: false,
+      summaryName: "Unexplained pregnancy loss, infant death, or trouble having children",
+      explanation: "Nothing in this family history points to this - no repeated miscarriages, no unexplained infant death, no trouble having children, no unexplained physical differences at birth. A genetic counsellor would still ask gently about these, because they are common enough that people sometimes do not think to mention them.",
+    },
+  ],
+  takeaway: {
+    title: "How this family connects to genetic testing",
+    paragraphs: [
+      "Two things stand out here: serious heart problems in three generations on David's dad's side, and those problems showing up younger than usual. That pattern is one that can fit with an inherited heart condition. It also shows how two of the three types of genetic testing can connect to the same family.",
+      "For David's <strong>brother</strong>, genetic testing could fall under <strong>diagnosis</strong>. The goal would be to find out exactly what is causing the heart condition he was just diagnosed with. If a specific gene change is found, that gives the whole family clearer information to work with.",
+      "For <strong>David himself</strong>, genetic testing could fall under <strong>health risk</strong>. If his brother's gene change is known, the same gene could be checked in David. That would tell him whether he shares the same risk. Neither type of testing is needed here - this is just an example of how one family history can connect to more than one testing category.",
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE (all in-memory, nothing persisted)
+// ═══════════════════════════════════════════════════════════
+
+const state = {
+  screen: 'landing',         // 'landing' | 'own' | 'own-results' | 'case' | 'case-results'
+  caseData: null,            // CASE_A or CASE_B when in a practice case
+  qIndex: 0,                 // current question index
+  answers: [],               // array of selected option indices (null = unanswered)
+};
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+
+function goLanding() {
+  state.screen = 'landing';
+  state.caseData = null;
+  state.qIndex = 0;
+  state.answers = [];
+  state._showedTree = null;
+  render();
+  scrollTop();
+}
+
+function startOwn() {
+  state.screen = 'own';
+  state.qIndex = 0;
+  state.answers = new Array(OWN_QUESTIONS.length).fill(null);
+  state._showedTree = null;
+  render();
+  scrollTop();
+}
+
+function startCase(caseData) {
+  state.screen = 'case';
+  state.caseData = caseData;
+  state.qIndex = 0;
+  state.answers = new Array(caseData.questions.length).fill(null);
+  state._showedTree = null;
+  render();
+  scrollTop();
+}
+
+function answerOwn(optionIndex) {
+  state.answers[state.qIndex] = optionIndex;
+  render();
+}
+
+function answerCase(optionIndex) {
+  // only allow answering if not already answered
+  if (state.answers[state.qIndex] !== null) return;
+  state.answers[state.qIndex] = optionIndex;
+  render();
+}
+
+function nextQ() {
+  const questions = state.screen === 'own' ? OWN_QUESTIONS : state.caseData.questions;
+  if (state.qIndex < questions.length - 1) {
+    state.qIndex++;
+    render();
+    scrollTop();
+  } else {
+    // finished - go to results
+    if (state.screen === 'own') state.screen = 'own-results';
+    else state.screen = 'case-results';
+    render();
+    scrollTop();
+  }
+}
+
+function prevQ() {
+  if (state.qIndex > 0) {
+    state.qIndex--;
+    render();
+    scrollTop();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+function render() {
+  const app = document.getElementById('app');
+  let html = '';
+
+  if (state.screen === 'landing') html = renderLanding();
+  else if (state.screen === 'own') html = renderOwn();
+  else if (state.screen === 'own-results') html = renderOwnResults();
+  else if (state.screen === 'case') html = renderCase();
+  else if (state.screen === 'case-results') html = renderCaseResults();
+
+  app.innerHTML = html;
+}
+
+// ─── Landing ────────────────────────────────────────────
+
+function renderLanding() {
+  return `
+    <div class="kicker">Interactive activity</div>
+    <h1>Clinical testing</h1>
+    <p class="lead">Clinical genetic testing can be used to look at <strong>health risk</strong> (changes in genes that raise someone's risk of developing certain diseases), to find a <strong>diagnosis</strong> (what's causing symptoms someone already has), and to check <strong>carrier status</strong> (inherited conditions that could be passed on to future children). Family history is one of the first things a genetic counsellor looks at to see if any of these might be helpful.</p>
+
+    <div class="intro-box">
+      <p><strong>Nothing you enter is saved or sent anywhere.</strong> Your answers stay on your device and disappear when you close this page.</p>
+    </div>
+
+    <h3 style="margin-top:24px;margin-bottom:8px">Choose one</h3>
+
+    <div class="cards">
+      <button class="card" onclick="startOwn()">
+        <span class="card-label">Your own family</span>
+        <h3>A look at your family history</h3>
+        <p>Answer six questions to get a sense of how family history may fit into the bigger picture of genetic testing.</p>
+        <span class="card-arrow">Start →</span>
+      </button>
+      <button class="card" onclick="startCase(CASE_A)">
+        <span class="card-label">Health risk · Carrier status</span>
+        <h3>The Smith family</h3>
+        <p>Sarah, 38, is thinking about starting a family. Her mom's side has a history of cancer. A good example of how health risk and carrier questions can come up together.</p>
+        <span class="card-arrow">Start →</span>
+      </button>
+      <button class="card" onclick="startCase(CASE_B)">
+        <span class="card-label">Diagnosis · Health risk</span>
+        <h3>The Martin family</h3>
+        <p>David, 44, is curious after his brother was just diagnosed with a heart condition. A good example of how one person's diagnosis can change the picture for the whole family.</p>
+        <span class="card-arrow">Start →</span>
+      </button>
+    </div>
+
+    <div class="instruction-box" style="margin-top:24px">
+      <p><strong>Disclaimer:</strong> this is a learning activity, not a medical check. Noticing something in your family does not mean anything is wrong, and it does not mean testing is needed. The activity is here to give you a sense of how family history fits into the bigger picture of genetic testing.</p>
+      <p style="margin-top:10px"><strong>Content warning:</strong> the two practice cases involve real-life health stories, including some illness and death.</p>
+    </div>
+  `;
+}
+
+// ─── Your family history ────────────────────────────────
+
+function renderOwn() {
+  const q = OWN_QUESTIONS[state.qIndex];
+  const selected = state.answers[state.qIndex];
+  const total = OWN_QUESTIONS.length;
+  const progress = ((state.qIndex + 1) / total) * 100;
+  const isFirst = state.qIndex === 0;
+
+  return `
+    ${renderProgress('A look at your family history', state.qIndex + 1, total, progress)}
+
+    ${isFirst ? `
+      <div class="instruction-box" style="margin-bottom:20px">
+        <p><strong>Directions for activity:</strong> Answer the six questions below, thinking about your own family. Each question asks about a different pattern a genetic counsellor might notice. There are no right or wrong answers.</p>
+      </div>
+    ` : ''}
+
+    <div class="q-block">
+      <div class="q-num">Question ${state.qIndex + 1} of ${total}</div>
+      <div class="q-text">${escapeHtml(q.text)}</div>
+      <div class="q-hint">${escapeHtml(q.hint)}</div>
+
+      <div class="q-options">
+        ${q.options.map((opt, i) => `
+          <button class="q-opt ${selected === i ? 'selected' : ''}" onclick="answerOwn(${i})">
+            <span class="radio"></span>
+            <span>${escapeHtml(opt)}</span>
+          </button>
+        `).join('')}
+      </div>
+
+      ${q.learnMoreIndex != null ? renderLearnMore(LEARN_MORE[q.learnMoreIndex]) : ''}
+    </div>
+
+    ${renderNav(selected !== null)}
+  `;
+}
+
+function renderLearnMore(lm) {
+  return `
+    <details class="learn-more">
+      <summary>
+        <span class="lm-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3a6 6 0 0 0-3.5 10.88V16a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-2.12A6 6 0 0 0 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M12 7v4M12 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="lm-label">Learn more</span>
+        <span class="lm-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="lm-body">
+        <h4 class="lm-title">${lm.title}</h4>
+        ${lm.body}
+      </div>
+    </details>
+  `;
+}
+
+function renderOwnResults() {
+  // Find which questions the user flagged (said yes/maybe to)
+  const flaggedIndices = [];
+  OWN_QUESTIONS.forEach((q, i) => {
+    const ans = state.answers[i];
+    if (ans !== null && q.yesIndices.includes(ans)) {
+      flaggedIndices.push(i);
+    }
+  });
+
+  return `
+    <div class="kicker">All done</div>
+    <h2>Nice work</h2>
+    <p class="lead">There are no right or wrong answers for your own family. The activity was just a way to show what family history looks like from a genetic counsellor's point of view.</p>
+
+    ${flaggedIndices.length > 0 ? renderFlaggedRecap(flaggedIndices) : ''}
+
+    <div class="next-step-box">
+      <h4>A few things to keep in mind</h4>
+      <p>Noticing one of these patterns in a family does not mean anything is wrong, and it does not mean genetic testing is needed. Most patterns have simple reasons that have nothing to do with genes. The six questions are one way of thinking about family history, not a checklist.</p>
+      <p>A family history might fit with one type of testing (health risk, diagnosis, or carrier status) but not the others. Part of what a genetic counsellor does is look at the whole picture before any conversation about testing even comes up.</p>
+      <p>Family history also often has gaps. The picture can change as more details come to light.</p>
+    </div>
+
+    ${renderResources()}
+
+    <div class="btn-row" style="margin-top:24px">
+      <button class="btn btn-secondary" onclick="goLanding()">Back to start</button>
+      <button class="btn btn-primary" onclick="startCase(CASE_A)">Try a practice case →</button>
+    </div>
+
+    ${renderPrivacyNote()}
+  `;
+}
+
+function renderFlaggedRecap(flaggedIndices) {
+  const panels = flaggedIndices.map(qIdx => {
+    const q = OWN_QUESTIONS[qIdx];
+    const lm = LEARN_MORE[q.learnMoreIndex];
+    return `
+      <div class="recap-panel">
+        <div class="recap-qref">You noted something for question ${qIdx + 1}</div>
+        <h4 class="recap-title">${lm.title}</h4>
+        <div class="recap-body">${lm.body}</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="recap-wrap">
+      <h3 class="recap-heading">A bit more on what you noted</h3>
+      <p class="recap-intro">You flagged ${flaggedIndices.length === 1 ? 'one of these patterns' : flaggedIndices.length + ' of these patterns'} with a "yes" or "maybe." Here is the background info from the Learn more, gathered in one place for a closer look. Noticing a pattern does not mean anything is wrong or that testing is needed.</p>
+      ${panels}
+    </div>
+  `;
+}
+
+// ─── Practice case ──────────────────────────────────────
+
+function renderCase() {
+  const c = state.caseData;
+
+  // First screen shows the family tree before questions
+  if (state.qIndex === 0 && state.answers.every(a => a === null)) {
+    // Check if user has "seen" the tree - we use a sentinel state
+    // Actually, simpler: always show the tree above question 1 if unanswered, or let them scroll
+    // Cleanest: show tree on its own as a "pre-question" screen
+    if (state._showedTree !== c.name) {
+      state._showedTree = c.name;
+      return renderCaseIntro(c);
+    }
+  }
+
+  const q = c.questions[state.qIndex];
+  const selected = state.answers[state.qIndex];
+  const answered = selected !== null;
+  const total = c.questions.length;
+  const progress = ((state.qIndex + 1) / total) * 100;
+
+  return `
+    ${renderProgress(c.title, state.qIndex + 1, total, progress)}
+
+    ${renderTreeCompact(c)}
+
+    <div class="q-block" style="margin-top:20px">
+      <div class="q-num">Question ${state.qIndex + 1} of ${total}</div>
+      <div class="q-text">${escapeHtml(q.text)}</div>
+
+      <div class="q-options">
+        ${q.options.map((opt, i) => {
+          let cls = '';
+          if (answered) {
+            if (i === q.correct && i === selected) cls = 'correct';
+            else if (i === selected) cls = 'incorrect';
+            else if (i === q.correct) cls = 'correct-answer';
+          } else if (selected === i) {
+            cls = 'selected';
+          }
+          return `
+            <button class="q-opt ${cls}" onclick="answerCase(${i})" ${answered ? 'disabled' : ''}>
+              <span class="radio"></span>
+              <span>${escapeHtml(opt)}</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+
+      ${answered ? renderFeedback(q, selected) : ''}
+
+      ${q.learnMoreIndex != null ? renderLearnMore(LEARN_MORE[q.learnMoreIndex]) : ''}
+    </div>
+
+    ${renderNav(answered)}
+  `;
+}
+
+function renderCaseIntro(c) {
+  return `
+    ${renderProgress(c.title, 0, c.questions.length, 0, true)}
+
+    <h2 style="margin-top:0">${escapeHtml(c.title)}</h2>
+
+    <div class="profile-header">
+      <div class="profile-name">${escapeHtml(c.profileName)}</div>
+      <div class="profile-meta">${escapeHtml(c.profileMeta)}</div>
+    </div>
+
+    ${renderTreeFull(c)}
+
+    <div class="instruction-box">
+      <p><strong>Directions for activity:</strong> Review the family history above, then answer the six questions. Each question asks about a different pattern a genetic counsellor might notice. You'll get feedback after each answer, and you can scroll back up to the family history anytime.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goLanding()">← Back</button>
+      <button class="btn btn-primary" onclick="render()" style="margin-left:auto">Start questions →</button>
+    </div>
+  `;
+}
+
+function renderTreeFull(c) {
+  return `
+    <div class="family-tree">
+      ${c.tree.map(gen => `
+        <div class="family-gen">
+          ${gen.map(m => `
+            <div class="family-member">
+              <div class="fm-label">${escapeHtml(m.label)}</div>
+              <div class="fm-name">${escapeHtml(m.name)}</div>
+              <div class="fm-detail ${m.flag ? 'fm-flag' : ''}">${escapeHtml(m.detail)}</div>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderTreeCompact(c) {
+  return `
+    <details style="margin-bottom:12px">
+      <summary style="cursor:pointer;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--teal-d);font-weight:500;list-style:none;display:flex;align-items:center;justify-content:space-between">
+        <span>📋 View ${escapeHtml(c.profileName)}'s family history</span>
+        <span style="font-size:12px;color:var(--muted)">tap to show</span>
+      </summary>
+      <div style="padding-top:12px">
+        <div class="profile-header" style="margin-bottom:10px;padding:10px 14px">
+          <div class="profile-name" style="font-size:15px">${escapeHtml(c.profileName)}</div>
+          <div class="profile-meta" style="font-size:13px">${escapeHtml(c.profileMeta)}</div>
+        </div>
+        ${renderTreeFull(c)}
+      </div>
+    </details>
+  `;
+}
+
+function renderFeedback(q, selected) {
+  const isCorrect = selected === q.correct;
+  const correctAnswer = q.isPresent ? 'Yes' : 'No';
+  return `
+    <div class="feedback ${isCorrect ? 'correct' : 'incorrect'}">
+      <span class="feedback-label">${isCorrect ? '✓ Nice catch' : '✗ Not quite'}</span>
+      <strong>Answer: ${correctAnswer}.</strong> ${escapeHtml(q.explanation)}
+    </div>
+  `;
+}
+
+function renderCaseResults() {
+  const c = state.caseData;
+  const correctCount = c.questions.filter((q, i) => state.answers[i] === q.correct).length;
+  const presentCount = c.questions.filter(q => q.isPresent).length;
+
+  return `
+    <div class="summary-header">
+      <div class="kicker">Case complete - ${escapeHtml(c.title)}</div>
+      <h2>What a genetic counsellor would notice</h2>
+      <p><strong>${presentCount} of the 6 patterns</strong> show up in this family's history. You got <strong>${correctCount} of ${c.questions.length}</strong> questions right.</p>
+    </div>
+
+    ${c.questions.map((q, i) => `
+      <div class="answer-block ${q.isPresent ? 'present' : 'not-present'}">
+        <span class="ab-tag ${q.isPresent ? 'present' : 'not-present'}">${q.isPresent ? 'Shows up here' : 'Not in this family'}</span>
+        <div class="ab-name">${i + 1}. ${escapeHtml(q.summaryName)}</div>
+        <div class="ab-answer"><strong>Answer: ${q.isPresent ? 'Yes' : 'No'}.</strong> ${escapeHtml(q.explanation)}</div>
+      </div>
+    `).join('')}
+
+    <div class="next-step-box">
+      <h4>${escapeHtml(c.takeaway.title)}</h4>
+      ${c.takeaway.paragraphs.map(p => `<p>${p}</p>`).join('')}
+    </div>
+
+    <div class="btn-row" style="margin-top:24px">
+      <button class="btn btn-secondary" onclick="goLanding()">Back to start</button>
+      ${c.name === 'Smith'
+        ? `<button class="btn btn-primary" onclick="startCase(CASE_B)">Try the other case →</button>`
+        : `<button class="btn btn-primary" onclick="startCase(CASE_A)">Try the other case →</button>`
+      }
+    </div>
+
+    ${renderPrivacyNote()}
+  `;
+}
+
+// ─── Shared pieces ──────────────────────────────────────
+
+function renderProgress(title, current, total, percent, isIntro) {
+  return `
+    <div class="progress">
+      <button class="progress-back" onclick="goLanding()">← Home</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${percent}%"></div>
+      </div>
+      <div class="progress-text">${isIntro ? title : `${title} · ${current}/${total}`}</div>
+    </div>
+  `;
+}
+
+function renderNav(canProceed) {
+  const questions = state.screen === 'own' ? OWN_QUESTIONS : state.caseData.questions;
+  const isFirst = state.qIndex === 0;
+  const isLast = state.qIndex === questions.length - 1;
+
+  return `
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="prevQ()" ${isFirst ? 'disabled style="visibility:hidden"' : ''}>← Previous</button>
+      <button class="btn btn-primary" onclick="nextQ()" ${!canProceed ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>
+        ${isLast ? 'See results →' : 'Next →'}
+      </button>
+    </div>
+  `;
+}
+
+function renderResources() {
+  return `
+    <div class="closing-resources" style="margin-top:20px">
+      <h4>Ontario resources</h4>
+      <p><strong>Ontario Health - Genetics</strong> - <a href="https://www.ontariohealth.ca/clinical/genetics" target="_blank" rel="noopener">the provincial hub for genetic services in Ontario</a>. Includes the Ontario Genetics Clinic Directory (a full list of clinics and who they serve), information on Ontario's genetics programs, and patient resources for genetic conditions.</p>
+      <p><strong>GEC-KO: Resources for the public</strong> - <a href="https://geneticseducation.ca/resources-for-the-public" target="_blank" rel="noopener">plain-language resources on basic genetics, genetic testing, and the Genetic Non-Discrimination Act</a>. Developed by Genetics Education Canada (GEC-KO), based out of CHEO in Ottawa.</p>
+      <p><strong>Ontario Breast Screening Program (High Risk)</strong> - <a href="https://www.ontario.ca/page/breast-cancer-testing-and-prevention" target="_blank" rel="noopener">for people with a family history of breast or ovarian cancer who have not had cancer themselves</a></p>
+    </div>
+  `;
+}
+
+function renderPrivacyNote() {
+  return `
+    <div class="privacy-note">
+      Your answers were not saved or sent anywhere. Closing or refreshing this page clears everything.
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+
+render();
+</script>
+
+</body>
+</html>
