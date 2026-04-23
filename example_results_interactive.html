@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Do Genetic Test Results Look Like?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Result type palette (from reference) */
+  --red:#A82D3D; --red-l:#F5DDE1; --red-d:#5C1621;
+  --mustard:#B27A1C; --mustard-l:#FAEDD1; --mustard-d:#4A3107;
+  --purple:#6B4A94; --purple-l:#EAE0F2; --purple-d:#352348;
+  --green:#4F8B3F; --green-l:#DDEBD4; --green-d:#234018;
+
+  /* Neutral / ui */
+  --teal:#1D9E75; --teal-l:#E1F5EE; --teal-d:#085041;
+  --blue:#185FA5; --blue-l:#E6F1FB; --blue-d:#0A3560;
+  --gray:#5F5E5A; --gray-l:#F1EFE8; --gray-ll:#F8F7F2;
+  --text:#1a1a1a; --muted:#6B7280;
+  --border:rgba(0,0,0,0.12);
+  --radius:10px;
+  --font-d:'DM Serif Display',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --accent:var(--teal); --accent-l:var(--teal-l); --accent-d:var(--teal-d);
+}
+
+body{font-family:var(--font-b);color:var(--text);background:#f8faf9;min-height:100vh;line-height:1.5}
+
+/* TOP BAR - only shown during quiz/final, like the reference screenshot */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--teal-l);
+  padding:0.65rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid rgba(0,0,0,0.05)
+}
+.topbar-home{
+  background:none;border:none;cursor:pointer;
+  font-family:var(--font-b);font-size:13px;font-weight:500;color:var(--teal-d);
+  padding:4px 8px;border-radius:6px;transition:background 0.15s
+}
+.topbar-home:hover{background:rgba(8,80,65,0.08)}
+.topbar-title{font-size:12px;color:var(--teal-d);font-weight:500}
+
+.wrapper{max-width:720px;margin:0 auto;padding:2rem 1.5rem 5rem}
+
+/* HEADER */
+.kicker{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--teal);margin-bottom:6px}
+h1{font-family:var(--font-d);font-size:2rem;font-weight:400;color:var(--teal-d);line-height:1.2;margin-bottom:0.4rem}
+.tagline{font-size:14px;color:var(--muted);line-height:1.65;border-bottom:2px solid var(--teal-d);padding-bottom:0.85rem;margin-bottom:1.5rem}
+
+/* SECTIONS */
+.section{display:none}
+.section.active{display:block;animation:fadeUp 0.3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PICKER */
+.picker-intro{font-size:15px;line-height:1.65;margin-bottom:1.25rem;color:var(--text)}
+.picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1rem}
+@media (max-width:500px){.picker-grid{grid-template-columns:1fr}}
+
+.pick-btn{
+  padding:1.25rem 1rem;border-radius:var(--radius);border:2px solid var(--border);
+  background:white;cursor:pointer;transition:all 0.2s;text-align:left;
+  font-family:var(--font-b);display:flex;flex-direction:column;gap:6px
+}
+.pick-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.pick-dot{width:20px;height:20px;border-radius:50%;margin-bottom:4px}
+.pick-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)}
+.pick-name{font-family:var(--font-d);font-size:1.2rem;color:var(--text);line-height:1.2}
+.pick-hint{font-size:12px;color:var(--muted);line-height:1.4}
+
+.pick-positive:hover{border-color:var(--red);background:var(--red-l)}
+.pick-positive .pick-dot{background:var(--red)}
+.pick-negative:hover{border-color:var(--green);background:var(--green-l)}
+.pick-negative .pick-dot{background:var(--green)}
+.pick-vus:hover{border-color:var(--purple);background:var(--purple-l)}
+.pick-vus .pick-dot{background:var(--purple)}
+.pick-dtc:hover{border-color:var(--mustard);background:var(--mustard-l)}
+.pick-dtc .pick-dot{background:var(--mustard)}
+
+/* STEP HEADER - now combines header + result line into one card */
+.step-header{
+  background:white;border-radius:var(--radius);border:1px solid var(--border);
+  margin-bottom:1rem;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04)
+}
+.step-header-top{
+  padding:1rem 1.25rem;
+  display:flex;align-items:center;gap:12px
+}
+.step-header-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;background:var(--accent)}
+.step-header-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:2px}
+.step-header-name{font-family:var(--font-d);font-size:1.5rem;font-weight:400;color:var(--accent-d);line-height:1.15}
+.step-header-text{flex:1}
+
+/* RESULT LINE - bottom half of the step header card */
+.result-line{
+  background:var(--accent-l);padding:1rem 1.25rem;
+  font-size:14px;line-height:1.65;color:var(--text);
+  border-top:1px solid var(--border)
+}
+.result-line strong{font-weight:500;color:var(--accent-d)}
+.result-line code{font-family:var(--font-m);font-size:12px;background:white;padding:1px 6px;border-radius:4px;border:1px solid var(--border)}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:1.25rem}
+.progress-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+.progress-track{height:6px;background:var(--gray-l);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.4s ease;width:0%}
+
+/* REPORT MINI */
+.report-mini{
+  background:white;border-radius:var(--radius);border:1px solid var(--border);
+  padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;line-height:1.6
+}
+.report-mini-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px}
+.report-mini-body{color:var(--text)}
+.report-mini-body code{font-family:var(--font-m);font-size:12px;background:var(--gray-l);padding:1px 6px;border-radius:4px}
+
+.report-mini-dtc{
+  background:linear-gradient(135deg,#fafafa 0%,#f0f0f5 100%);
+  border-radius:var(--radius);padding:1.25rem;
+  border:1px solid var(--border);margin-bottom:1.25rem
+}
+.dtc-intro{font-size:13px;line-height:1.6;color:var(--text);padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid rgba(0,0,0,0.08)}
+.dtc-mini-brand{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dtc-mini-logo{width:22px;height:22px;border-radius:6px;background:var(--mustard);display:flex;align-items:center;justify-content:center;color:white;font-family:var(--font-d);font-size:12px}
+.dtc-mini-name{font-size:12px;font-weight:700;color:var(--text)}
+.dtc-mini-risk{font-size:13px;line-height:1.6;color:var(--text)}
+.dtc-mini-risk strong{font-family:var(--font-d);font-size:1.1rem;color:var(--mustard-d)}
+
+/* QUESTION CARD */
+.qcard{
+  background:white;border-radius:var(--radius);border:1px solid var(--border);
+  padding:1.5rem;margin-bottom:1rem;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04)
+}
+.qnum{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-d);margin-bottom:8px}
+.qtext{font-family:var(--font-d);font-size:1.3rem;line-height:1.3;color:var(--text);margin-bottom:1.25rem}
+
+.qopts{display:flex;flex-direction:column;gap:8px}
+.qopt{
+  padding:12px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:white;cursor:pointer;transition:all 0.15s;text-align:left;
+  font-family:var(--font-b);font-size:14px;line-height:1.5;color:var(--text);
+  display:flex;gap:10px;align-items:flex-start
+}
+.qopt-letter{
+  width:22px;height:22px;border-radius:50%;background:var(--gray-l);color:var(--gray);
+  font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;transition:all 0.15s
+}
+.qopt:hover:not(.locked){border-color:var(--accent);background:var(--accent-l)}
+.qopt:hover:not(.locked) .qopt-letter{background:var(--accent);color:white}
+
+.qopt.chosen-correct{border-color:var(--teal);background:var(--teal-l)}
+.qopt.chosen-correct .qopt-letter{background:var(--teal);color:white}
+.qopt.chosen-wrong{border-color:#C44536;background:#FCE8E4}
+.qopt.chosen-wrong .qopt-letter{background:#C44536;color:white}
+.qopt.is-correct{border-color:var(--teal);background:var(--teal-l)}
+.qopt.is-correct .qopt-letter{background:var(--teal);color:white}
+.qopt.locked{cursor:default}
+.qopt.dimmed{opacity:0.5}
+
+/* REVEAL */
+.reveal{
+  margin-top:1.25rem;padding:1.25rem;border-radius:8px;
+  background:var(--gray-ll);border-left:3px solid var(--accent);
+  display:none;animation:fadeUp 0.3s ease
+}
+.reveal.visible{display:block}
+.reveal-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-d);margin-bottom:8px}
+.reveal-text{font-size:14px;line-height:1.7;color:var(--text)}
+.reveal-text strong{font-weight:500}
+.reveal-text ul{margin:0.5rem 0;padding-left:1.25rem}
+.reveal-text li{margin-bottom:0.35rem;line-height:1.55}
+.reveal-text li:last-child{margin-bottom:0}
+
+/* NAV */
+.nav{display:flex;gap:10px;margin-top:1rem}
+.nav-btn{
+  flex:1;padding:12px;border-radius:8px;border:1.5px solid var(--border);
+  background:white;cursor:pointer;font-family:var(--font-b);font-size:13px;font-weight:500;
+  transition:all 0.15s;color:var(--text)
+}
+.nav-btn:hover:not(:disabled){border-color:var(--accent);background:var(--accent-l);color:var(--accent-d)}
+.nav-btn.primary{background:var(--accent);border-color:var(--accent);color:white}
+.nav-btn.primary:hover:not(:disabled){background:var(--accent-d);border-color:var(--accent-d);color:white}
+.nav-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* FINAL */
+.final{
+  background:linear-gradient(135deg,var(--accent-l) 0%,white 100%);
+  border-radius:var(--radius);padding:1.75rem;border:1px solid var(--accent);
+  margin-bottom:1.5rem
+}
+.final-kicker{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent-d);margin-bottom:6px}
+.final-title{font-family:var(--font-d);font-size:1.5rem;font-weight:400;color:var(--accent-d);line-height:1.2;margin-bottom:1rem}
+.final-text{font-size:14px;line-height:1.75;color:var(--text);margin-bottom:1rem}
+.final-text:last-of-type{margin-bottom:1.25rem}
+
+.final-takeaway{
+  background:white;border-radius:8px;padding:1rem 1.25rem;
+  font-size:14px;line-height:1.65;color:var(--text);
+  border-left:3px solid var(--accent)
+}
+.final-takeaway strong{font-weight:500;color:var(--accent-d)}
+
+.learn-links{
+  background:white;border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.25rem 1.5rem;margin-bottom:1rem
+}
+.learn-links-title{font-family:var(--font-d);font-size:1.1rem;color:var(--text);margin-bottom:10px}
+.learn-link-row{display:flex;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.6;flex-wrap:wrap}
+.learn-link-row:last-child{margin-bottom:0}
+.learn-link-label{font-weight:500;color:var(--text);flex-shrink:0}
+.learn-link-val{color:var(--teal-d)}
+
+.restart-row{display:flex;gap:10px;margin-top:1rem}
+.restart-btn{
+  flex:1;padding:10px;border-radius:8px;background:var(--gray-l);
+  border:1px solid var(--border);font-family:var(--font-b);font-size:13px;
+  cursor:pointer;color:var(--muted)
+}
+.restart-btn:hover{background:var(--gray);color:white}
+.restart-btn.primary{background:white;color:var(--accent-d);border-color:var(--accent)}
+.restart-btn.primary:hover{background:var(--accent-l)}
+
+/* MORE INFORMATION ACCORDION (in quiz) */
+.moreinfo{
+  background:white;border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:1.25rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)
+}
+.moreinfo summary{
+  font-family:var(--font-b);font-size:14px;font-weight:500;color:var(--text);
+  padding:14px 16px;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:10px;user-select:none;transition:background 0.15s
+}
+.moreinfo summary::-webkit-details-marker{display:none}
+.moreinfo summary::before{content:'ℹ';width:18px;height:18px;border-radius:50%;background:var(--accent);color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal;font-weight:500}
+.moreinfo summary::after{content:'▾';margin-left:auto;font-size:12px;color:var(--muted);transition:transform 0.2s}
+.moreinfo[open] summary{background:var(--accent-l);color:var(--accent-d);border-bottom:1px solid var(--border)}
+.moreinfo[open] summary::after{transform:rotate(180deg)}
+.moreinfo summary:hover{background:var(--gray-ll)}
+.moreinfo[open] summary:hover{background:var(--accent-l)}
+.moreinfo-body{padding:1rem 1.25rem;font-size:13.5px;line-height:1.7;color:var(--text)}
+.moreinfo-body p{margin-bottom:0.75rem}
+.moreinfo-body p:last-child{margin-bottom:0}
+.moreinfo-body strong{font-weight:500}
+.moreinfo-body h4{font-family:var(--font-b);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-d);margin-top:1.1rem;margin-bottom:0.4rem}
+.moreinfo-body h4:first-child{margin-top:0}
+.moreinfo-body ul{margin:0 0 0.75rem;padding-left:1.25rem}
+.moreinfo-body li{margin-bottom:0.4rem;line-height:1.65}
+.moreinfo-body li:last-child{margin-bottom:0}
+
+/* THEMES */
+body.theme-positive{--accent:var(--red);--accent-l:var(--red-l);--accent-d:var(--red-d)}
+body.theme-negative{--accent:var(--green);--accent-l:var(--green-l);--accent-d:var(--green-d)}
+body.theme-vus{--accent:var(--purple);--accent-l:var(--purple-l);--accent-d:var(--purple-d)}
+body.theme-dtc{--accent:var(--mustard);--accent-l:var(--mustard-l);--accent-d:var(--mustard-d)}
+
+.ref{margin-top:1.5rem;font-size:11px;color:var(--muted);line-height:1.7;font-style:italic}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none">
+  <button class="topbar-home" onclick="resetToPicker()">← Home</button>
+  <div class="topbar-title">What do example results look like?</div>
+</div>
+
+<div class="wrapper">
+
+  <div class="kicker">Genetic Testing: What the Public Needs to Know</div>
+  <h1>What do example results look like?</h1>
+  <p class="tagline">These are <strong>example</strong> results for four different people. Pick one to see what their result looks like and walk through five questions about what it means for them.</p>
+
+  <!-- PICKER -->
+  <div class="section active" id="section-picker">
+    <p class="picker-intro">Which example would you like to explore?</p>
+
+    <div class="picker-grid">
+      <button class="pick-btn pick-positive" onclick="startQuiz('positive')">
+        <div class="pick-dot"></div>
+        <div class="pick-label">Clinical test</div>
+        <div class="pick-name">Positive</div>
+        <div class="pick-hint">Maya: a gene change was found</div>
+      </button>
+
+      <button class="pick-btn pick-negative" onclick="startQuiz('negative')">
+        <div class="pick-dot"></div>
+        <div class="pick-label">Clinical test</div>
+        <div class="pick-name">Negative</div>
+        <div class="pick-hint">Diana: no gene change found</div>
+      </button>
+
+      <button class="pick-btn pick-vus" onclick="startQuiz('vus')">
+        <div class="pick-dot"></div>
+        <div class="pick-label">Clinical test</div>
+        <div class="pick-name">Uncertain</div>
+        <div class="pick-hint">Chris: a change was found, but it is unclear</div>
+      </button>
+
+      <button class="pick-btn pick-dtc" onclick="startQuiz('dtc')">
+        <div class="pick-dot"></div>
+        <div class="pick-label">At-home genetic test</div>
+        <div class="pick-name">Risk estimate</div>
+        <div class="pick-hint">Priya: a score showing higher-than-average chance</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section" id="section-quiz">
+
+    <div class="step-header">
+      <div class="step-header-top">
+        <div class="step-header-dot"></div>
+        <div class="step-header-text">
+          <div class="step-header-label" id="step-type"></div>
+          <div class="step-header-name" id="step-name"></div>
+        </div>
+      </div>
+      <div id="step-resultline"></div>
+    </div>
+
+    <div id="step-report"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-text">Question 1 of 4</span>
+        <span id="progress-pct">20%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="qcard">
+      <div class="qnum" id="qnum"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="qopts" id="qopts"></div>
+      <div class="reveal" id="reveal">
+        <div class="reveal-label" id="reveal-label">Correct answer</div>
+        <div class="reveal-text" id="reveal-text"></div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn" id="btn-prev" onclick="prevQ()">← Back</button>
+      <button class="nav-btn primary" id="btn-next" onclick="nextQ()" disabled>Next →</button>
+    </div>
+
+    <div id="step-moreinfo"></div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="section" id="section-final">
+    <div class="step-header">
+      <div class="step-header-top">
+        <div class="step-header-dot"></div>
+        <div class="step-header-text">
+          <div class="step-header-label" id="final-type"></div>
+          <div class="step-header-name" id="final-name"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="final">
+      <div class="final-kicker">Key takeaway</div>
+      <div class="final-title" id="final-title"></div>
+      <div id="final-body"></div>
+    </div>
+
+    <div class="restart-row">
+      <button class="restart-btn primary" onclick="resetToPicker()">Try another result</button>
+      <button class="restart-btn" onclick="restartSame()">Review this one again</button>
+    </div>
+  </div>
+
+  <p class="ref">All examples are made up for teaching. Real reports from Canadian labs look similar but include more technical details.</p>
+
+</div>
+
+<script>
+const RESULTS = {
+  positive: {
+    label:"Clinical test",
+    name:"Positive result",
+    resultLine:`The hereditary cancer panel found a change in Maya's <code>BRCA2</code> gene that is linked to higher chance of disease. This is a positive result.`,
+    moreInfo:`<h4>What it means</h4>
+      <p>A gene change linked to disease or higher chance of disease was found.</p>
+      <h4>What comes next</h4>
+      <p>It may point to next steps like screening, prevention, or telling family members.</p>
+      <h4>"Carrier" results also fall here</h4>
+      <p>Sometimes the person does not have the condition themselves, but they could pass the change on to their children.</p>`,
+    theme:"theme-positive",
+    report:`<div class="report-mini">
+      <div class="report-mini-title">About this example</div>
+      <div class="report-mini-body"><strong>Maya, age 32. No personal history of cancer.</strong><br><br>She was offered testing because of a strong family history:<br>&bull; Mother, breast cancer at age 38<br>&bull; Maternal aunt, breast cancer at age 42<br>&bull; Maternal grandmother, ovarian cancer at age 55</div>
+    </div>`,
+    questions: [
+      {
+        q:"Does this result mean Maya will definitely get cancer?",
+        opts:[
+          {t:"No, it means her chance of cancer is higher than average, but not certain",correct:true},
+          {t:"Yes, a positive result means cancer is certain",correct:false},
+          {t:"Only if she reaches the same age her mother was diagnosed",correct:false}
+        ],
+        answer:"A positive result points to a <strong>higher chance of disease</strong>, not a diagnosis. It is not an emergency, and some people with this change never develop cancer at all. Maya has time to ask questions and plan."
+      },
+      {
+        q:"What does a positive result tell Maya about her chance of cancer?",
+        opts:[
+          {t:"Her chance is now 100%",correct:false},
+          {t:"Her chance for certain cancers is higher than average",correct:true},
+          {t:"Nothing, every positive result is the same",correct:false}
+        ],
+        answer:"A BRCA2 change raises the chance of breast and ovarian cancer above the general population. How much higher depends on the specific change, age, and other factors. A genetics team can give numbers that apply to a person's situation."
+      },
+      {
+        q:"What does Maya's result mean for her family?",
+        opts:[
+          {t:"Nothing, this is only about Maya",correct:false},
+          {t:"All of her relatives must be tested right away",correct:false},
+          {t:"Her close relatives have the option to be tested for the same gene change if they want to know",correct:true}
+        ],
+        answer:"Parents, siblings, and children each have a 50% chance of carrying the same change, and they may want to know. Testing is always a personal choice. Each relative can decide for themselves if and when they want to be tested. They only need to test for <strong>Maya's specific change</strong>, not the whole panel."
+      },
+      {
+        q:"What can Maya do with this information?",
+        opts:[
+          {t:"Ask her family doctor for a referral to a genetics clinic to talk through her options",correct:true},
+          {t:"Make a prevention plan on her own using online information",correct:false},
+          {t:"Nothing, there is no way to use this information",correct:false}
+        ],
+        answer:`A positive result may point to next steps like:
+          <ul>
+            <li><strong>Screening</strong> (earlier or more frequent breast screening)</li>
+            <li><strong>Prevention</strong> (medications or risk-reducing surgery)</li>
+            <li><strong>Telling family members</strong> so they can decide if they want to be tested</li>
+          </ul>
+          She does not have to do any of these right away. A genetics team helps her understand what each option involves so she can decide what is right for her.`
+      }
+    ],
+    final:{
+      title:"A positive result is information, not a diagnosis.",
+      body:`<p class="final-text">Maya now knows something important about her DNA. That does not change her health today, but it may point to next steps like screening, prevention, or telling family.</p>
+      <p class="final-text">Her best next step is a genetics clinic appointment. A counsellor can explain what her result means so she can decide what to do with it.</p>`
+    }
+  },
+
+  negative: {
+    label:"Clinical test",
+    name:"Negative result",
+    resultLine:`No disease-causing change was found in the 22 genes tested in Diana's DNA. This is a negative result.`,
+    moreInfo:`<h4>What it means</h4>
+      <p>No disease-causing change was found in the genes that were tested. This is reassuring, but does not rule everything out.</p>
+      <h4>Why it is not the whole story</h4>
+      <p>The test only looks at specific genes. A higher chance of disease can still come from genes that were not tested, from causes science has not found yet, or from lifestyle and family history.</p>
+      <h4>Next step</h4>
+      <p>Keep talking to a doctor if family history is strong.</p>`,
+    theme:"theme-negative",
+    report:`<div class="report-mini">
+      <div class="report-mini-title">About this example</div>
+      <div class="report-mini-body"><strong>Diana, age 45. No personal history of cancer.</strong><br><br>She was referred through the Ontario Breast Screening Program High Risk pathway because of family history:<br>&bull; Mother, breast cancer at 48<br>&bull; Sister, breast cancer at 52<br>&bull; Both have passed away and could not be tested</div>
+    </div>`,
+    questions: [
+      {
+        q:"Does a negative result mean Diana will never get cancer?",
+        opts:[
+          {t:"Yes, a negative result means she is safe from cancer",correct:false},
+          {t:"No, cancer can still happen for reasons genetic tests cannot rule out",correct:true},
+          {t:"Only if no one else in her family gets cancer",correct:false}
+        ],
+        answer:"A negative result is reassuring, but it does not rule everything out. The test only looks at specific genes. Cancer can still come from genes that were not tested, from causes science has not found yet, or from lifestyle and family history."
+      },
+      {
+        q:"What does a negative result actually tell Diana?",
+        opts:[
+          {t:"She has no gene changes anywhere in her DNA",correct:false},
+          {t:"Her family history was wrong",correct:false},
+          {t:"Nothing was found in the 22 genes tested, but other causes are still possible",correct:true}
+        ],
+        answer:"The test only looks at specific genes. Nothing was found in those 22 genes, but other causes can still be there, including genes that were not tested or causes science has not found yet."
+      },
+      {
+        q:"Should Diana's relatives be tested too?",
+        opts:[
+          {t:"Not for this result, there is nothing specific for them to test for",correct:true},
+          {t:"Yes, everyone should get this same panel",correct:false},
+          {t:"Only if they live in the same house",correct:false}
+        ],
+        answer:"Family testing is most useful when a specific gene change has been identified in the family. With a negative result, there is nothing specific for relatives to test for. But their own screening should still take the family history into account."
+      },
+      {
+        q:"What should Diana do next?",
+        opts:[
+          {t:"Stop her extra screening, since the test was negative",correct:false},
+          {t:"Keep talking to her doctor, since her family history is strong",correct:true},
+          {t:"Stop thinking about it, the test said no",correct:false}
+        ],
+        answer:"A strong family history still shapes screening, even after a negative test. Diana's plan should look at both the test result <strong>and</strong> the family story. In Ontario, people with a strong family history can stay in the Ontario Breast Screening Program High Risk pathway even after a negative test."
+      }
+    ],
+    final:{
+      title:"A negative result does not rule everything out.",
+      body:`<p class="final-text">No disease-causing change was found in the genes tested, and that is good news. But the test only looks at specific genes.</p>
+      <p class="final-text">Diana's family history still matters for her screening plan. Her doctor can help her decide what comes next. Keep talking to a doctor if family history is strong.</p>`
+    }
+  },
+
+  vus: {
+    label:"Clinical test",
+    name:"Uncertain result",
+    resultLine:`A gene change was found in Chris's <code>MYH7</code> gene, but scientists do not yet know what it means. This is an uncertain result.`,
+    moreInfo:`<h4>What it means</h4>
+      <p>A gene change was found, but scientists do not yet know what it means.</p>
+      <h4>Not a diagnosis</h4>
+      <p>It should not drive medical decisions on its own. Labs keep studying these changes, so the answer may become clearer later.</p>
+      <h4>Next step</h4>
+      <p>Ask how you will be told if the result is updated.</p>`,
+    theme:"theme-vus",
+    report:`<div class="report-mini">
+      <div class="report-mini-title">About this example</div>
+      <div class="report-mini-body"><strong>Chris, age 39.</strong> They were tested because they were diagnosed with a thickened heart muscle, and their father died suddenly at 51.</div>
+    </div>`,
+    questions: [
+      {
+        q:"Does an uncertain result mean Chris has the disease?",
+        opts:[
+          {t:"No, scientists do not yet know what this gene change means",correct:true},
+          {t:"Yes, it is a kind of positive result",correct:false},
+          {t:"Only if someone else in the family has the same change",correct:false}
+        ],
+        answer:"A gene change was found, but there is not enough evidence yet to say whether it causes disease or is harmless. It is not a positive result and it is not a diagnosis."
+      },
+      {
+        q:"Should this result change Chris's medical care?",
+        opts:[
+          {t:"Yes, start extra testing and screening right away",correct:false},
+          {t:"No, it should not drive medical decisions on its own",correct:true},
+          {t:"Only if symptoms appear later",correct:false}
+        ],
+        answer:"An uncertain result should not drive medical decisions on its own. Care stays based on the person's own health and family history. Acting on it can lead to unnecessary worry and procedures."
+      },
+      {
+        q:"Should Chris's family members be tested for this uncertain change?",
+        opts:[
+          {t:"Yes, all of Chris's close relatives should be tested",correct:false},
+          {t:"Healthy relatives should be tested so they know their own chance of disease",correct:false},
+          {t:"Only relatives with the same condition, and only if it could help clarify what the change means",correct:true}
+        ],
+        answer:"Healthy relatives usually should not be tested for an uncertain change. The result would not change how their doctors manage their care. Their medical decisions stay based on personal and family history. However, a genetics team may offer testing to <strong>relatives who have the same or a similar condition as Chris</strong>. This is called a <strong>family study</strong>. It helps the lab see whether the gene change tracks with the disease in the family, which can be used to re-classify the result over time. The genetics clinic decides if this is worth doing."
+      },
+      {
+        q:"Will Chris's uncertain result always stay uncertain?",
+        opts:[
+          {t:"Yes, an uncertain result never changes",correct:false},
+          {t:"Only if more testing is paid for",correct:false},
+          {t:"No, labs keep studying these changes, so the answer may become clearer later",correct:true}
+        ],
+        answer:"Uncertain results can change over time. As research continues and labs gather more data from other families, the result may later be re-classified as <strong>harmless</strong> or as <strong>disease-causing</strong>, depending on what new evidence shows about that specific change. Most labs do not automatically review or contact patients when something changes. It is usually up to the patient or their clinic to check back in every few years and ask for a re-review. Many uncertain results stay uncertain for a long time."
+      }
+    ],
+    final:{
+      title:"An uncertain result is not something to act on.",
+      body:`<p class="final-text">A gene change was found, but scientists do not yet know what it means. That can feel frustrating, but it is not a diagnosis and it should not drive medical decisions on its own.</p>
+      <p class="final-text">Uncertain results can change over time. As new evidence comes in, the result may later be re-classified as harmless or as disease-causing, depending on what research shows about that specific change. Most labs do not automatically contact patients when something changes, so it is usually up to the patient or their clinic to check back in every few years and ask for a re-review.</p>`
+    }
+  },
+
+  dtc: {
+    label:"At-home genetic test",
+    name:"Risk estimate",
+    resultLine:`Priya ordered an at-home genetic test online, sent in a saliva sample, and got her results through an app. The app gave her a number showing her chance of developing type 2 diabetes is higher than average. This is a risk estimate.`,
+    moreInfo:`<h4>What it means</h4>
+      <p>The result gives a number or score showing a person's chance of developing a condition.</p>
+      <h4>It is not a diagnosis</h4>
+      <p>No single cause was found. These estimates add up many small genetic factors. Personal and family history still matter.</p>
+      <h4>Next step</h4>
+      <p>Talk to a family doctor about what the result means for day-to-day health.</p>`,
+    theme:"theme-dtc",
+    report:`<div class="report-mini-dtc">
+      <div class="dtc-intro"><strong>Priya, age 47.</strong> She bought an at-home genetic test online (like 23andMe or AncestryDNA) out of curiosity. She mailed in a saliva sample and got her results through the company's app. This is what the app showed her:</div>
+      <div class="dtc-mini-brand">
+        <div class="dtc-mini-logo">Gx</div>
+        <div class="dtc-mini-name">GenomeExample Health Insights</div>
+      </div>
+      <div class="dtc-mini-risk">Type 2 diabetes. Your estimated lifetime chance: <strong>~50%</strong> (average: ~33%). Based on a score combining many small DNA differences.</div>
+    </div>`,
+    questions: [
+      {
+        q:"Can Priya's result be used the same way as a result from a doctor-ordered genetic test?",
+        opts:[
+          {t:"No, at-home results are not used to diagnose or guide medical care",correct:true},
+          {t:"Yes, any genetic test result can be used the same way",correct:false},
+          {t:"Only if she shares the report with her doctor",correct:false}
+        ],
+        answer:"At-home kits give general health information, but they are not the same as a clinical genetic test. A clinical test is ordered by a doctor, looks at the DNA in a more complete way, and comes with a genetics team who can explain what the result means for a person's care. An at-home result is not used on its own to make a diagnosis or guide treatment."
+      },
+      {
+        q:"What kind of number is Priya's \"50%\" score?",
+        opts:[
+          {t:"A prediction that she will get diabetes",correct:false},
+          {t:"An estimate that adds up many small genetic factors",correct:true},
+          {t:"A reading of her current blood sugar",correct:false}
+        ],
+        answer:"The result gives a number showing her chance of developing a condition. It adds up many small genetic factors. No single cause was found, and it is not a prediction about Priya. Personal and family history still matter."
+      },
+      {
+        q:"What can Priya's risk score alone tell her about whether she will develop type 2 diabetes?",
+        opts:[
+          {t:"Her score tells her whether she will get diabetes",correct:false},
+          {t:"Her score means lifestyle does not matter for her",correct:false},
+          {t:"Her score is one piece of a bigger picture, not a prediction for her",correct:true}
+        ],
+        answer:"A risk score estimates how a person compares to others on one factor: their genetics. It does not take into account everything else that shapes a person's chance of type 2 diabetes, including weight, physical activity, diet, age, and family history. Research shows that both genetics and lifestyle matter and that they contribute independently. A score on its own cannot tell Priya what will happen to her."
+      },
+      {
+        q:"What should Priya do next?",
+        opts:[
+          {t:"Share the report with her family doctor before making any major changes to her health, diet, or medications",correct:true},
+          {t:"Start a strict diet and exercise plan on her own based on the report",correct:false},
+          {t:"Ignore the result since it is only from a kit",correct:false}
+        ],
+        answer:"Patient guidance from sources like MedlinePlus recommends talking to a doctor before making any major changes to health, diet, or fitness after an at-home genetic test. A family doctor can put the result in context using personal history, family history, and simple clinical tests (like a blood sugar check). Ignoring the result is not ideal either. A short conversation with a doctor is the most useful next step."
+      }
+    ],
+    final:{
+      title:"A risk estimate is information, not a diagnosis.",
+      body:`<p class="final-text">The kit gave Priya a number, but no single cause was found. These estimates add up many small genetic factors. Personal and family history still matter.</p>
+      <p class="final-text">Her best next step is a conversation with her family doctor about what this means for day-to-day health.</p>`
+    }
+  }
+};
+
+let state = {
+  resultType: null,
+  qIndex: 0,
+  answered: [],
+  chosen: []
+};
+
+function startQuiz(type) {
+  state.resultType = type;
+  state.qIndex = 0;
+  state.answered = [false,false,false,false];
+  state.chosen = [null,null,null,null];
+
+  const r = RESULTS[type];
+  document.body.className = r.theme;
+  document.getElementById('step-type').textContent = r.label;
+  document.getElementById('step-name').textContent = r.name;
+  document.getElementById('final-type').textContent = r.label;
+  document.getElementById('final-name').textContent = r.name;
+
+  showSection('quiz');
+  renderQ();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderQ() {
+  const r = RESULTS[state.resultType];
+  const q = r.questions[state.qIndex];
+  const idx = state.qIndex;
+
+  document.getElementById('step-resultline').innerHTML = `<div class="result-line">${r.resultLine}</div>`;
+  // Preserve the open/closed state of the moreinfo accordion across navigation
+  const prevMoreInfo = document.querySelector('#step-moreinfo details');
+  const wasOpen = prevMoreInfo ? prevMoreInfo.open : false;
+  document.getElementById('step-moreinfo').innerHTML = `<details class="moreinfo"${wasOpen?' open':''}><summary>More information about a ${r.name.toLowerCase()}</summary><div class="moreinfo-body">${r.moreInfo}</div></details>`;
+  document.getElementById('step-report').innerHTML = (idx === 0) ? r.report : '';
+
+  const pct = ((idx+1)/4)*100;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = `Question ${idx+1} of 4`;
+  document.getElementById('progress-pct').textContent = Math.round(pct)+'%';
+
+  document.getElementById('qnum').textContent = `Question ${idx+1}`;
+  document.getElementById('qtext').innerHTML = q.q;
+
+  const optsEl = document.getElementById('qopts');
+  const locked = state.answered[idx];
+  const chosen = state.chosen[idx];
+  optsEl.innerHTML = q.opts.map((o,i) => {
+    const letter = String.fromCharCode(65+i);
+    let cls = 'qopt';
+    if (locked) {
+      cls += ' locked';
+      if (i === chosen) cls += o.correct ? ' chosen-correct' : ' chosen-wrong';
+      else if (o.correct) cls += ' is-correct';
+      else cls += ' dimmed';
+    }
+    return `<button class="${cls}" onclick="chooseOpt(${i})" ${locked?'disabled':''}>
+      <span class="qopt-letter">${letter}</span>
+      <span>${o.t}</span>
+    </button>`;
+  }).join('');
+
+  const revEl = document.getElementById('reveal');
+  if (locked) {
+    revEl.classList.add('visible');
+    const correctIdx = q.opts.findIndex(o => o.correct);
+    const correctLetter = String.fromCharCode(65 + correctIdx);
+    document.getElementById('reveal-label').textContent = `Correct answer: ${correctLetter}`;
+    document.getElementById('reveal-text').innerHTML = q.answer;
+  } else {
+    revEl.classList.remove('visible');
+  }
+
+  document.getElementById('btn-prev').disabled = (idx === 0);
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = !locked;
+  nextBtn.textContent = (idx === 3) ? 'See your takeaway →' : 'Next →';
+}
+
+function chooseOpt(i) {
+  const idx = state.qIndex;
+  if (state.answered[idx]) return;
+  state.chosen[idx] = i;
+  state.answered[idx] = true;
+  renderQ();
+}
+
+function nextQ() {
+  if (state.qIndex === 3) {
+    showFinal();
+  } else {
+    state.qIndex++;
+    renderQ();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+function prevQ() {
+  if (state.qIndex > 0) {
+    state.qIndex--;
+    renderQ();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+function showFinal() {
+  const r = RESULTS[state.resultType];
+  document.getElementById('final-title').textContent = r.final.title;
+  document.getElementById('final-body').innerHTML = r.final.body;
+  showSection('final');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  document.getElementById('topbar').style.display = (name === 'picker') ? 'none' : 'flex';
+}
+
+function resetToPicker() {
+  document.body.className = '';
+  state = {resultType:null,qIndex:0,answered:[],chosen:[]};
+  showSection('picker');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartSame() {
+  const type = state.resultType;
+  startQuiz(type);
+}
+</script>
+</body>
+</html>
