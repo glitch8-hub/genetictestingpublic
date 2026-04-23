@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluating Private Genetic Testing</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --rust:#A8472A;--rust-d:#7A3219;--rust-l:#F2DDD0;--rust-accent:#C45A36;
+  --cream:#F5E8D8;--cream-d:#EBD9C2;--card:#FDF6EC;
+  --teal:#1D9E75;--teal-l:#E1F5EE;--teal-d:#085041;
+  --amber:#8A6B3F;--amber-l:#EFE4CE;
+  --coral:#C4584A;--coral-l:#F5DDD8;
+  --text:#2B1810;--muted:#6B5543;--faint:#A89685;
+  --border:rgba(122,50,25,0.15);
+  --border-soft:rgba(122,50,25,0.08);
+  --r:10px;
+  --font-d:'Lora',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+  --shadow:0 1px 3px rgba(122,50,25,0.08);
+  --shadow-md:0 3px 10px rgba(122,50,25,0.1);
+}
+
+body{font-family:var(--font-b);color:var(--text);background:var(--cream);min-height:100vh;line-height:1.5}
+.app{max-width:720px;margin:0 auto;padding:2rem 1.25rem 5rem}
+
+/* PROGRESS */
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.progress-track{flex:1;height:4px;background:var(--cream-d);border-radius:100px;overflow:hidden}
+.progress-bar{height:100%;background:var(--rust);border-radius:100px;transition:width 0.5s ease;width:0%}
+.progress-label{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;letter-spacing:0.02em}
+
+/* SCREENS */
+.screen{display:none;animation:fadeIn 0.3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* TYPOGRAPHY */
+.kicker{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--rust);margin-bottom:12px}
+h1{font-family:var(--font-d);font-size:2.1rem;font-weight:600;color:var(--rust-d);line-height:1.15;margin-bottom:0.75rem;letter-spacing:-0.01em}
+h2{font-family:var(--font-d);font-size:1.6rem;font-weight:600;color:var(--rust-d);line-height:1.2;margin-bottom:0.75rem;letter-spacing:-0.005em}
+h3{font-family:var(--font-d);font-size:1.2rem;font-weight:600;color:var(--rust-d);line-height:1.3;margin-bottom:0.5rem}
+.lead{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:1.25rem}
+.lead strong{color:var(--text);font-weight:600}
+
+/* INTRO ICON */
+.intro-icon{width:56px;height:56px;background:var(--rust);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;box-shadow:var(--shadow-md)}
+.intro-icon svg{width:28px;height:28px;stroke:white;fill:none;stroke-width:2}
+
+/* INFO BOXES */
+.info-box{border-radius:var(--r);padding:1.1rem 1.35rem;margin-bottom:1.5rem;border-left:3px solid}
+.info-rust{background:var(--card);border-color:var(--rust-d)}
+.info-rust p{color:var(--text);font-size:14px;line-height:1.65}
+.info-rust p strong{font-weight:600;color:var(--rust-d)}
+.info-yellow{background:#FBF3D4;border-color:#D4A84B}
+.info-yellow p{color:#4A3A0F;font-size:13.5px;line-height:1.7}
+.info-yellow p strong{color:#7A5A17;font-weight:600}
+
+/* COMPANY PICK CARDS */
+.company-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:1.5rem}
+@media (min-width:640px){.company-grid{grid-template-columns:1fr 1fr 1fr;gap:16px}}
+.company-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.6rem 1.25rem 1.25rem;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.company-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--rust-accent)}
+.co-emoji{font-size:2.2rem;line-height:1;margin-bottom:2px}
+.co-kicker{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--rust);display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.co-kicker span{background:var(--rust-l);padding:2px 8px;border-radius:100px}
+.co-name{font-family:var(--font-d);font-size:1.35rem;font-weight:600;color:var(--rust-d);line-height:1.2;margin-top:2px}
+.co-tagline{font-size:13.5px;color:var(--muted);line-height:1.55;flex-grow:1}
+.co-price{font-size:12.5px;color:var(--rust);font-weight:500;margin-top:4px}
+.co-arrow{font-size:12.5px;color:var(--rust);font-weight:600;margin-top:8px}
+
+/* FAKE BROWSER MOCKUP */
+.browser{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:var(--shadow);margin:0.75rem 0}
+.browser-bar{background:#E8E4DB;padding:8px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-soft)}
+.browser-dots{display:flex;gap:5px;flex-shrink:0}
+.browser-dot{width:9px;height:9px;border-radius:50%;background:#C4B8A3}
+.browser-url{flex:1;background:#fff;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.browser-body{padding:1rem 1.15rem;background:#FAFAF7;font-size:13.5px;line-height:1.6;color:var(--text)}
+.browser-body h4{font-family:var(--font-d);font-size:1.15rem;font-weight:600;color:#1C1C1A;margin-bottom:0.4rem;line-height:1.25}
+.browser-body .subhead{font-size:12.5px;color:#666;margin-bottom:0.65rem;font-weight:500}
+.browser-body p{margin-bottom:0.55rem}
+.browser-body p:last-child{margin-bottom:0}
+.browser-body ul{margin:0.35rem 0 0.35rem 1.25rem;font-size:13px}
+.browser-body li{margin-bottom:0.2rem}
+.browser-badge{display:inline-block;background:#2F6FB0;color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;letter-spacing:0.04em}
+.browser-badge.badge-green{background:#1D9E75}
+.browser-badge.badge-rust{background:var(--rust)}
+.browser-price{font-family:var(--font-d);font-size:1.5rem;font-weight:600;color:#1C1C1A;display:inline-block;margin:0.25rem 0}
+.browser-price small{font-size:13px;color:var(--muted);font-weight:400;margin-left:6px}
+.browser-caption{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:6px;line-height:1.5;padding:0 2px}
+
+.browser-body .hero{width:100%;display:block;margin:-1rem -1.15rem 1rem;border-bottom:1px solid var(--border-soft)}
+.browser-body .hero svg{display:block;width:100%;height:auto}
+.faq-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--rust-l);border-radius:50%;margin-right:8px;vertical-align:middle}
+.faq-icon svg{width:16px;height:16px;stroke:var(--rust-d);fill:none;stroke-width:2}
+.faq-q{display:flex;align-items:flex-start;gap:10px;margin-bottom:0.6rem}
+.faq-q p{margin:0;flex:1}
+.privacy-lock{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--rust-l);border-radius:8px;float:left;margin:0 10px 4px 0}
+.privacy-lock svg{width:20px;height:20px;stroke:var(--rust-d);fill:none;stroke-width:2}
+
+/* ACCORDION */
+.evidence-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:12px;flex-wrap:wrap}
+.evidence-title{font-family:var(--font-d);font-size:1.1rem;font-weight:600;color:var(--rust-d)}
+.mock-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:var(--cream-d);padding:4px 10px;border-radius:100px;font-weight:500}
+
+.accordion{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem}
+.acc-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.acc-header{width:100%;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px;cursor:pointer;background:none;border:none;text-align:left;font-family:var(--font-b);transition:background 0.15s}
+.acc-header:hover{background:var(--rust-l)}
+.acc-header.active{background:var(--rust-l);border-bottom:1px solid var(--border)}
+.acc-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--rust);color:white;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.acc-label{flex:1;font-size:14px;font-weight:500;color:var(--rust-d)}
+.acc-chev{flex-shrink:0;width:18px;height:18px;transition:transform 0.2s;color:var(--rust)}
+.acc-header.active .acc-chev{transform:rotate(180deg)}
+.acc-body{display:none;padding:1.25rem 1.4rem 1.35rem}
+.acc-body.open{display:block}
+.acc-body p{font-size:13.5px;line-height:1.7;color:var(--text);margin-bottom:0.75rem}
+.acc-body p:last-child{margin-bottom:0}
+.acc-body p strong{color:var(--rust-d)}
+
+/* CALLOUTS */
+.notice{background:var(--amber-l);border-left:3px solid var(--amber);border-radius:6px;padding:0.8rem 1rem;margin:0.85rem 0;font-size:13px;line-height:1.65;color:#3D2F15}
+.notice strong{color:var(--amber);text-transform:uppercase;font-size:10.5px;letter-spacing:0.12em;font-weight:600;display:block;margin-bottom:5px}
+.notice-flag-red{background:var(--coral-l);border-left-color:var(--coral);color:#4A1B0C}
+.notice-flag-red strong{color:var(--coral)}
+.notice-flag-green{background:var(--teal-l);border-left-color:var(--teal);color:var(--teal-d)}
+.notice-flag-green strong{color:var(--teal-d)}
+
+/* QUESTION CARD */
+.q-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:1.5rem 1.6rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.q-num{font-size:10px;font-weight:600;color:var(--rust);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px}
+.q-text{font-family:var(--font-d);font-size:1.25rem;font-weight:600;color:var(--rust-d);line-height:1.3;margin-bottom:8px}
+.q-hint{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:1.25rem}
+.q-hint strong{color:var(--text);font-weight:600}
+.q-options{display:flex;flex-direction:column;gap:8px}
+.q-opt{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--card);font-family:var(--font-b);text-align:left;width:100%}
+.q-opt:hover:not(:disabled){border-color:var(--rust-accent);background:var(--rust-l)}
+.q-opt.selected{border-color:var(--rust-d);background:var(--rust-l);border-width:1.5px}
+.q-opt:disabled{cursor:default;opacity:0.55}
+.q-opt.selected:disabled{opacity:1}
+.q-opt.q-opt-expert:disabled{opacity:1;background:var(--teal-l);border-color:var(--teal);border-width:1.5px}
+.q-opt.q-opt-userwrong:disabled{opacity:1;background:var(--coral-l);border-color:var(--coral);border-width:1.5px}
+.q-opt-text{font-size:14px;line-height:1.55;color:var(--text);flex:1}
+.q-mark{flex-shrink:0;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-left:8px}
+.q-mark-right{background:var(--teal);color:white}
+.q-mark-wrong{background:var(--coral);color:white}
+.q-feedback{margin-top:1rem;padding:1rem 1.15rem;border-radius:8px;border-left:3px solid;font-size:13.5px;line-height:1.7;animation:qfadeIn 0.25s ease}
+.q-feedback-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px}
+.q-feedback p{margin:0;color:inherit}
+.q-feedback.fb-good{background:var(--teal-l);border-color:var(--teal);color:var(--teal-d)}
+.q-feedback.fb-good .q-feedback-label{color:var(--teal-d)}
+.q-feedback.fb-warn{background:var(--amber-l);border-color:var(--amber);color:#3D2F15}
+.q-feedback.fb-warn .q-feedback-label{color:var(--amber)}
+.q-feedback.fb-fail{background:var(--coral-l);border-color:var(--coral);color:#4A1B0C}
+.q-feedback.fb-fail .q-feedback-label{color:var(--coral)}
+@keyframes qfadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+.website-viewer{margin-bottom:1.25rem;border:1px dashed var(--border);border-radius:var(--r);background:var(--card);overflow:hidden}
+.website-viewer > summary{cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--rust-d);font-weight:500;list-style:none;user-select:none;transition:background 0.15s ease}
+.website-viewer > summary::-webkit-details-marker{display:none}
+.website-viewer > summary:hover{background:var(--rust-l)}
+.website-viewer[open] > summary{background:var(--rust-l);border-bottom:1px solid var(--border)}
+.website-viewer-icon{width:20px;height:20px;flex-shrink:0;color:var(--rust)}
+.website-viewer-caret{margin-left:auto;font-size:11px;color:var(--muted);font-weight:500}
+.website-viewer[open] .website-viewer-caret::after{content:' (close)'}
+.website-viewer:not([open]) .website-viewer-caret::after{content:' (open)'}
+.website-viewer-body{padding:1rem 1.15rem 1.25rem}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;border:none;font-family:var(--font-b);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;letter-spacing:0.01em}
+.btn-primary{background:var(--rust);color:white}
+.btn-primary:hover{background:var(--rust-d)}
+.btn-primary:disabled{background:var(--cream-d);color:var(--faint);cursor:default}
+.btn-secondary{background:var(--card);color:var(--rust-d);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--rust-d);background:var(--rust-l)}
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:1.5rem;flex-wrap:wrap}
+
+/* BADGE */
+.company-badge{display:inline-flex;align-items:center;gap:8px;background:var(--rust-l);border-radius:100px;padding:6px 14px;margin-bottom:1.25rem}
+.company-badge span{font-size:12px;font-weight:600;color:var(--rust-d);letter-spacing:0.02em}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:1.75rem 0}
+
+/* RESULTS CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:10px;margin:1.25rem 0}
+.check-item{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:1.1rem 1.25rem;box-shadow:var(--shadow)}
+.check-top{display:flex;gap:12px;align-items:flex-start}
+.check-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.check-body{flex:1}
+.check-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px}
+.check-name{font-family:var(--font-d);font-size:1.05rem;font-weight:600;color:var(--rust-d);margin-bottom:5px;line-height:1.3}
+.check-detail{font-size:13px;color:var(--muted);line-height:1.65}
+.check-what{font-size:12.5px;margin-top:9px;line-height:1.65;padding:9px 12px;border-radius:6px}
+.check-pass .check-icon{background:var(--teal-l);color:var(--teal-d)}
+.check-pass .check-label{color:var(--teal-d)}
+.check-pass .check-what{background:var(--teal-l);color:var(--teal-d)}
+.check-warn .check-icon{background:var(--amber-l);color:var(--amber)}
+.check-warn .check-label{color:var(--amber)}
+.check-warn .check-what{background:var(--amber-l);color:#3D2F15}
+.check-fail .check-icon{background:var(--coral-l);color:var(--coral)}
+.check-fail .check-label{color:var(--coral)}
+.check-fail .check-what{background:var(--coral-l);color:#4A1B0C}
+
+/* TAKEAWAY */
+.takeaway{background:var(--rust-d);color:white;border-radius:var(--r);padding:1.5rem 1.75rem;margin:1.75rem 0}
+.takeaway h3{font-family:var(--font-d);font-size:1.2rem;font-weight:600;margin-bottom:10px;color:white}
+.takeaway p{font-size:14px;line-height:1.75;color:rgba(255,255,255,0.92)}
+.takeaway p strong{color:white;font-weight:600}
+
+/* FINAL CHECKLIST */
+.general-checklist{margin:1.5rem 0}
+.gcl-title{font-family:var(--font-d);font-size:1.3rem;font-weight:600;color:var(--rust-d);margin-bottom:1rem}
+.gcl-intro{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:1.1rem}
+.gcl-item{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border-soft)}
+.gcl-item:last-child{border-bottom:none}
+.gcl-box{width:18px;height:18px;border:1.5px solid var(--rust-d);border-radius:4px;flex-shrink:0;margin-top:3px}
+.gcl-text{font-size:13.5px;line-height:1.65;color:var(--text)}
+.gcl-text strong{color:var(--rust-d);font-weight:600}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-bar" id="prog"></div></div>
+    <div class="progress-label" id="prog-label">Getting started</div>
+  </div>
+
+  <!-- ══ SCREEN 1: INTRO + PICK COMPANY ══ -->
+  <div class="screen active" id="s-company">
+    <div class="kicker">Interactive Activity</div>
+    <h1>Evaluating Private Genetic Testing</h1>
+    <p class="lead">Private genetic tests are everywhere now. Some you can buy online with a kit. Some come from private clinics where a doctor orders the test. They all promise to tell you something about yourself. But are they worth it?</p>
+    <p class="lead">Pick one of the three types of testing below. You will see pages from a <strong>made-up</strong> company that sells that kind of test, then answer five questions to evaluate it. At the end you will get a checklist you can use on real companies you come across.</p>
+
+    <div class="info-box info-rust">
+      <p><strong>Nothing you enter is saved or sent anywhere.</strong> Your answers stay on your device and disappear when you close this page.</p>
+    </div>
+
+    <h3 style="margin:1.75rem 0 1rem">Choose a type of testing to see a made-up website that offers it</h3>
+
+    <div class="company-grid">
+      <div class="company-card" onclick="selectCompany('genoroots')">
+        <div class="co-emoji">🧬</div>
+        <div class="co-name">Ancestry</div>
+        <div class="co-tagline">Family history, ethnic background, and where your ancestors came from.</div>
+        <div class="co-arrow">Start →</div>
+      </div>
+
+      <div class="company-card" onclick="selectCompany('vitagenix')">
+        <div class="co-emoji">🥗</div>
+        <div class="co-name">Nutrition &amp; traits</div>
+        <div class="co-tagline">Caffeine sensitivity, fitness traits, diet advice, and other lifestyle reports.</div>
+        <div class="co-arrow">Start →</div>
+      </div>
+
+      <div class="company-card" onclick="selectCompany('pharmagene')">
+        <div class="co-emoji">💊</div>
+        <div class="co-name">Medications</div>
+        <div class="co-tagline">How your body processes certain drugs, to help choose what works best for you.</div>
+        <div class="co-arrow">Start →</div>
+      </div>
+    </div>
+
+    <div class="info-box info-yellow">
+      <p><strong>Disclaimer:</strong> the three companies you will see in this activity are made up. The quotes, prices, and claims shown are fictional, though they are based on real patterns seen in real genetic testing companies.</p>
+      <p style="margin-top:0.6rem"><strong>Content warning:</strong> this activity discusses data privacy, medical results, and marketing red flags. Take a break if you need to.</p>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 2: EVIDENCE ══ -->
+  <div class="screen" id="s-evidence">
+    <div class="kicker">Step 1 of 2</div>
+    <h2 id="e-title">What does the website say?</h2>
+    <div class="info-box info-yellow">
+      <p><strong>Directions for activity:</strong> read the website and its sections (the homepage is below, with FAQ and Privacy in the sections further down). When you feel ready, move on to evaluating it using five questions.</p>
+    </div>
+
+    <div class="evidence-header">
+      <div class="evidence-title" id="e-co-name">GenoRoots</div>
+      <span class="mock-pill">Made-up for this activity</span>
+    </div>
+
+    <div id="e-homepage" style="margin-bottom:1.25rem"></div>
+    <div class="accordion" id="e-accordion"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goTo('s-questions')">Answer the questions →</button>
+      <button class="btn btn-secondary" onclick="goTo('s-company')">Back to start</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 3: QUESTIONS ══ -->
+  <div class="screen" id="s-questions">
+    <div class="kicker">Step 2 of 2</div>
+    <div class="info-box info-yellow">
+      <p><strong>Directions for activity:</strong> answer five questions to evaluate what you just read. Pick the answer that feels closest to your honest reaction. You will see feedback from a genetics professional after each answer.</p>
+    </div>
+    <details class="website-viewer" id="q-viewer">
+      <summary>
+        <svg class="website-viewer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="7" r="0.5" fill="currentColor"/><circle cx="10" cy="7" r="0.5" fill="currentColor"/></svg>
+        <span id="q-viewer-label">View the website</span>
+        <span class="website-viewer-caret"></span>
+      </summary>
+      <div class="website-viewer-body" id="q-viewer-body"></div>
+    </details>
+    <div id="q-container"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="q-next" onclick="nextQ()" disabled>Next →</button>
+      <button class="btn btn-secondary" onclick="prevQ()">Back</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 4: RESULTS ══ -->
+  <div class="screen" id="s-results">
+    <div class="kicker">All done</div>
+    <h2 id="r-title">Evaluation complete</h2>
+    <div class="info-box info-yellow">
+      <p><strong>What this shows:</strong> a summary of your answers alongside what a genetics professional would say about each one, a bottom-line takeaway for this kind of test, and a general checklist you can use for any real genetic test you come across.</p>
+    </div>
+
+    <h3 style="margin-bottom:1rem">Your answers, question by question</h3>
+    <div class="checklist" id="r-checklist"></div>
+
+    <div class="takeaway" id="r-takeaway"></div>
+
+    <div class="divider"></div>
+
+    <div class="general-checklist">
+      <div class="gcl-title">A checklist for any real genetic test</div>
+      <p class="gcl-intro">When you see a real ad for a genetic test, work through these five questions before you buy. You can print this page or save it for later.</p>
+      <div id="gcl-items"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="restart()">Try another company</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = { company:null, answers:{}, currentQ:0 };
+
+// ── COMPANY DATA ──────────────────────────────────────────────────────────
+const COMPANIES = {
+  'genoroots': {
+    name: 'GenoRoots',
+    url: 'genoroots.com',
+    evidence: [
+      {
+        label: 'Homepage',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">genoroots.com</div>
+            </div>
+            <div class="browser-body">
+              <div class="hero">
+                <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="0" y="0" width="680" height="340" fill="#F2DDD0"/>
+                  <circle cx="80" cy="60" r="38" fill="#E0B89A" opacity="0.45"/>
+                  <circle cx="600" cy="50" r="52" fill="#E0B89A" opacity="0.4"/>
+                  <circle cx="620" cy="280" r="75" fill="#E0B89A" opacity="0.3"/>
+                  <circle cx="50" cy="260" r="58" fill="#E0B89A" opacity="0.35"/>
+                  <path d="M 0 290 Q 340 270 680 285 L 680 340 L 0 340 Z" fill="#D9A888" opacity="0.5"/>
+                  <g transform="translate(90, 150) rotate(-6)">
+                    <rect x="0" y="0" width="170" height="140" fill="#F5EADA" stroke="#8A6B3F" stroke-width="1.5"/>
+                    <rect x="8" y="8" width="154" height="108" fill="#C9A57F"/>
+                    <g transform="translate(85, 62)">
+                      <ellipse cx="-25" cy="-14" rx="11" ry="13" fill="#8B6F5C"/>
+                      <path d="M -43 26 Q -43 2 -25 2 Q -7 2 -7 26 Z" fill="#6B8E9E"/>
+                      <rect x="-28" y="-8" width="6" height="4" fill="#5A4A3A" opacity="0.4"/>
+                      <ellipse cx="25" cy="-14" rx="11" ry="13" fill="#A88670"/>
+                      <path d="M 7 26 Q 7 2 25 2 Q 43 2 43 26 Z" fill="#A8472A"/>
+                      <ellipse cx="0" cy="-6" rx="8" ry="10" fill="#D4A98A"/>
+                      <path d="M -9 22 Q -9 8 0 8 Q 9 8 9 22 Z" fill="#8A6B3F"/>
+                    </g>
+                    <rect x="8" y="116" width="154" height="16" fill="#F5EADA"/>
+                    <text x="85" y="127" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#8A6B3F" font-style="italic">Family, 1962</text>
+                  </g>
+                  <g transform="translate(260, 110) rotate(4)">
+                    <rect x="0" y="0" width="210" height="160" fill="#F9F1E2" stroke="#C4A07A" stroke-width="0.8"/>
+                    <line x1="0" y1="0" x2="210" y2="0" stroke="#8A6B3F" stroke-width="0.5" opacity="0.3"/>
+                    <g stroke="#6B8E9E" stroke-width="1" opacity="0.6" stroke-linecap="round" fill="none">
+                      <path d="M 18 28 Q 45 26 75 28 Q 105 30 140 27 Q 170 26 190 28"/>
+                      <path d="M 18 46 Q 50 44 85 46 Q 120 48 155 45 Q 180 44 192 46"/>
+                      <path d="M 18 64 Q 40 62 70 64 Q 100 66 130 63 Q 160 62 184 64"/>
+                      <path d="M 18 82 Q 55 80 90 82 Q 125 84 160 81 Q 180 80 188 82"/>
+                      <path d="M 18 100 Q 45 98 80 100 Q 115 102 145 99 Q 170 98 178 100"/>
+                      <path d="M 18 118 Q 50 116 85 118 Q 115 120 140 117"/>
+                      <path d="M 18 136 Q 45 134 75 136 Q 100 138 120 135"/>
+                    </g>
+                    <circle cx="196" cy="12" r="8" fill="#C45A36" opacity="0.85"/>
+                    <path d="M 192 8 L 200 16 M 200 8 L 192 16" stroke="#F9F1E2" stroke-width="1.2" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(470, 185)">
+                    <ellipse cx="52" cy="92" rx="62" ry="7" fill="#8B5E3C" opacity="0.18"/>
+                    <path d="M 10 30 Q 10 12 22 12 L 72 12 Q 92 12 92 30 L 92 70 Q 92 88 72 88 L 22 88 Q 10 88 10 70 Z" fill="#F9F1E2"/>
+                    <path d="M 10 30 Q 10 12 22 12 L 72 12 Q 92 12 92 30 L 92 70 Q 92 88 72 88 L 22 88 Q 10 88 10 70 Z" fill="#E8D4B8" opacity="0.4"/>
+                    <ellipse cx="51" cy="18" rx="41" ry="6" fill="#6B4323"/>
+                    <ellipse cx="51" cy="17" rx="36" ry="4" fill="#8A5C34"/>
+                    <g opacity="0.6">
+                      <path d="M 28 8 Q 30 0 34 4" stroke="#C4A07A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                      <path d="M 50 6 Q 52 -2 56 2" stroke="#C4A07A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                      <path d="M 72 8 Q 74 0 78 4" stroke="#C4A07A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    </g>
+                    <path d="M 92 40 Q 108 40 108 56 Q 108 72 92 72" fill="none" stroke="#F9F1E2" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M 92 42 Q 105 42 105 56 Q 105 70 92 70" fill="none" stroke="#E8D4B8" stroke-width="2" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(100, 50) rotate(-10)">
+                    <rect x="0" y="0" width="70" height="50" fill="#E8D4B8" stroke="#A88660" stroke-width="0.8"/>
+                    <path d="M 3 3 L 67 3 L 67 47 L 3 47 Z" fill="none" stroke="#A88660" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.6"/>
+                    <path d="M 10 38 Q 15 32 22 33 Q 28 34 34 30 Q 40 26 48 29 Q 54 31 62 28" stroke="#6B8E9E" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+                    <circle cx="22" cy="33" r="2" fill="#C45A36"/>
+                    <circle cx="48" cy="29" r="2" fill="#C45A36"/>
+                    <path d="M 15 12 Q 20 8 25 12 Q 22 18 18 22 Q 14 18 15 12 Z" fill="#A87860" opacity="0.4"/>
+                  </g>
+                  <g transform="translate(420, 60) rotate(8)">
+                    <rect x="0" y="0" width="60" height="30" fill="#F9F1E2" stroke="#C4A07A" stroke-width="0.6"/>
+                    <rect x="0" y="0" width="60" height="12" fill="#E8D4B8"/>
+                    <g stroke="#8A6B3F" stroke-width="0.6" fill="none" opacity="0.5">
+                      <path d="M 8 6 L 52 6"/>
+                      <path d="M 8 18 L 45 18"/>
+                      <path d="M 8 22 L 50 22"/>
+                    </g>
+                    <rect x="42" y="2" width="14" height="8" fill="#C45A36" opacity="0.8"/>
+                  </g>
+                </svg>
+              </div>
+              <h4>Find where you come from.</h4>
+              <div class="subhead">Discover your ancestry in 6 weeks. Connect with cousins you never knew.</div>
+              <p>Order a GenoRoots kit. Spit in the tube. Mail it back. In 4-6 weeks you will see:</p>
+              <ul>
+                <li>Regional ancestry estimates, broken down by area of the world</li>
+                <li>Relatives who have also tested, matched to you</li>
+                <li>Migration maps showing how your family moved</li>
+              </ul>
+              <p style="margin-top:0.6rem"><em>Your result is an estimate, not a definitive answer. We do not test for health conditions, carrier status, or medication response. For those, see your doctor.</em></p>
+              <p style="margin-top:0.5rem"><strong>Kit - <span class="browser-price">$129<small>one-time</small></span></strong></p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'About the test (FAQ)',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">genoroots.com/faq</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="faq-icon" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 3"/><path d="M12 17h.01"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></span>Frequently asked questions</h4>
+              <p><strong>Is GenoRoots reviewed by Health Canada or the FDA?</strong><br>No. Health Canada and the FDA only review tests that make medical claims. GenoRoots is an ancestry-only service, so no regulator review is needed. The lab that processes your sample has a quality certification (CLIA) to show it runs properly.</p>
+              <p style="margin-top:0.6rem"><strong>Will someone explain my results to me?</strong><br>Results are delivered through the GenoRoots app or website. We do not provide counselling services. If your results are unexpected or emotionally difficult, we recommend talking to a trusted person or a counsellor on your own.</p>
+              <p style="margin-top:0.6rem"><strong>What exactly does the test check?</strong><br>We look at about 700,000 specific points in your DNA and compare them to a reference database of about 1,500 people from different world regions.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'Privacy policy',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">genoroots.com/privacy</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="privacy-lock" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Privacy policy</h4>
+              <p>Research sharing is turned <strong>on by default</strong> when you create your account. This means we share your DNA data with drug companies and research partners unless you turn sharing off in your account settings.</p>
+              <p>You can ask us to delete your account at any time. Deleting your account does not delete your physical spit sample - you need to make a separate request for that.</p>
+              <p>Your data is stored in the United States.</p>
+            </div>
+          </div>
+        `
+      },
+    ]
+  },
+
+  'vitagenix': {
+    name: 'VitaGenix',
+    url: 'vitagenix.com',
+    evidence: [
+      {
+        label: 'Homepage',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">vitagenix.com</div>
+            </div>
+            <div class="browser-body">
+              <div class="hero">
+                <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="0" y="0" width="680" height="340" fill="#E8DDF5"/>
+                  <circle cx="100" cy="60" r="48" fill="#D4BFE8" opacity="0.5"/>
+                  <circle cx="580" cy="50" r="62" fill="#BFDCE8" opacity="0.45"/>
+                  <circle cx="630" cy="280" r="85" fill="#BFE8D8" opacity="0.35"/>
+                  <circle cx="40" cy="260" r="68" fill="#E8D0BF" opacity="0.4"/>
+                  <g opacity="0.4">
+                    <path d="M 180 80 L 186 72 M 180 72 L 186 80" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M 520 100 L 528 90 M 520 90 L 528 100" stroke="#0891B2" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="50" cy="150" r="3" fill="#DB2777"/>
+                    <circle cx="640" cy="170" r="2.5" fill="#059669"/>
+                    <circle cx="600" cy="100" r="2" fill="#F59E0B"/>
+                  </g>
+                  <path d="M 0 295 Q 340 275 680 290 L 680 340 L 0 340 Z" fill="#C8B4E0" opacity="0.55"/>
+                  <g transform="translate(80, 205) rotate(-6)">
+                    <ellipse cx="65" cy="68" rx="75" ry="6" fill="#4A3A5C" opacity="0.2"/>
+                    <path d="M 5 50 L 5 22 Q 5 18 9 18 L 45 18 Q 70 10 95 18 L 125 18 Q 129 18 129 22 L 129 50 Q 129 64 115 64 L 19 64 Q 5 64 5 50 Z" fill="#FFFFFF"/>
+                    <path d="M 5 50 L 5 22 Q 5 18 9 18 L 45 18 Q 70 10 95 18 L 125 18 Q 129 18 129 22 L 129 50 Q 129 64 115 64 L 19 64 Q 5 64 5 50 Z" fill="#7C3AED" opacity="0.15"/>
+                    <path d="M 45 18 Q 70 10 95 18" fill="none" stroke="#5B21B6" stroke-width="1.5"/>
+                    <path d="M 8 28 Q 25 30 50 26 Q 75 22 100 27 Q 120 30 126 28" stroke="#7C3AED" stroke-width="1.2" fill="none" opacity="0.5"/>
+                    <path d="M 15 42 L 25 50 L 20 42 L 30 52" stroke="#5B21B6" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+                    <circle cx="100" cy="48" r="4" fill="#5B21B6" opacity="0.8"/>
+                    <circle cx="108" cy="48" r="4" fill="#5B21B6" opacity="0.8"/>
+                    <path d="M 45 58 L 48 64 L 51 58 L 54 64 L 57 58 L 60 64 L 63 58 L 66 64 L 69 58 L 72 64 L 75 58 L 78 64 L 81 58 L 84 64" stroke="#A87860" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(215, 210) rotate(3)">
+                    <ellipse cx="35" cy="85" rx="42" ry="5" fill="#4A3A5C" opacity="0.2"/>
+                    <path d="M 20 20 Q 20 10 35 10 Q 50 10 50 20 L 50 30 L 55 30 Q 58 30 58 33 L 58 38 Q 58 41 55 41 L 50 41 L 50 78 Q 50 82 46 82 L 24 82 Q 20 82 20 78 Z" fill="#0891B2"/>
+                    <path d="M 20 20 Q 20 10 35 10 Q 50 10 50 20 L 50 25 L 20 25 Z" fill="#0E7490"/>
+                    <rect x="22" y="32" width="26" height="4" fill="#FFFFFF" opacity="0.35" rx="1"/>
+                    <rect x="22" y="40" width="26" height="32" fill="#FFFFFF" opacity="0.15" rx="1"/>
+                    <path d="M 24 48 Q 30 46 36 48 Q 42 50 48 48" stroke="#FFFFFF" stroke-width="1" fill="none" opacity="0.6"/>
+                    <path d="M 24 56 Q 30 54 36 56 Q 42 58 48 56" stroke="#FFFFFF" stroke-width="1" fill="none" opacity="0.4"/>
+                    <text x="35" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="6.5" font-weight="600" fill="#FFFFFF">VITA</text>
+                  </g>
+                  <g transform="translate(300, 195) rotate(-4)">
+                    <ellipse cx="55" cy="72" rx="58" ry="5" fill="#4A3A5C" opacity="0.2"/>
+                    <path d="M 8 55 Q 8 48 18 44 Q 35 35 55 35 Q 75 35 92 44 Q 102 48 102 55 Q 102 64 94 68 L 16 68 Q 8 64 8 55 Z" fill="#FFFFFF"/>
+                    <path d="M 8 55 Q 8 48 18 44 Q 35 35 55 35 Q 75 35 92 44 Q 102 48 102 55 Q 102 64 94 68 L 16 68 Q 8 64 8 55 Z" fill="#DB2777" opacity="0.18"/>
+                    <path d="M 8 55 L 102 55 L 94 68 L 16 68 Z" fill="#BE185D" opacity="0.35"/>
+                    <path d="M 20 48 Q 40 40 55 40 Q 70 40 90 48" stroke="#831843" stroke-width="1" fill="none" opacity="0.5"/>
+                    <path d="M 32 42 Q 55 36 78 42" stroke="#DB2777" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.8"/>
+                    <circle cx="55" cy="37" r="3" fill="#831843"/>
+                    <rect x="52" y="30" width="6" height="5" fill="#831843" rx="0.5"/>
+                    <path d="M 22 58 L 90 58" stroke="#FFFFFF" stroke-width="1" opacity="0.5"/>
+                  </g>
+                  <g transform="translate(425, 210) rotate(5)">
+                    <ellipse cx="50" cy="78" rx="55" ry="5" fill="#4A3A5C" opacity="0.2"/>
+                    <rect x="10" y="20" width="80" height="55" fill="#F59E0B" rx="8"/>
+                    <rect x="10" y="20" width="80" height="55" fill="#D97706" opacity="0.25" rx="8"/>
+                    <path d="M 10 30 L 90 30" stroke="#92400E" stroke-width="1" opacity="0.4"/>
+                    <path d="M 10 65 L 90 65" stroke="#92400E" stroke-width="1" opacity="0.4"/>
+                    <circle cx="30" cy="48" r="8" fill="#FDE68A"/>
+                    <circle cx="30" cy="48" r="5" fill="#D97706"/>
+                    <circle cx="30" cy="48" r="2" fill="#92400E"/>
+                    <rect x="42" y="40" width="42" height="3" fill="#FFFFFF" opacity="0.7" rx="1"/>
+                    <rect x="42" y="46" width="34" height="3" fill="#FFFFFF" opacity="0.5" rx="1"/>
+                    <rect x="42" y="52" width="28" height="3" fill="#FFFFFF" opacity="0.5" rx="1"/>
+                    <path d="M 42 60 L 48 56 L 52 60 L 58 54 L 62 60 L 68 52 L 72 60 L 78 58" stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+                  </g>
+                  <g transform="translate(525, 105) rotate(12)">
+                    <ellipse cx="50" cy="62" rx="55" ry="5" fill="#4A3A5C" opacity="0.18"/>
+                    <path d="M 8 35 Q 8 18 24 18 L 76 18 Q 92 18 92 35 Q 92 52 76 52 L 24 52 Q 8 52 8 35 Z" fill="#1F2937"/>
+                    <path d="M 8 35 Q 8 18 24 18 L 76 18 Q 92 18 92 35 Q 92 52 76 52 L 24 52 Q 8 52 8 35 Z" fill="#374151" opacity="0.5"/>
+                    <ellipse cx="26" cy="35" rx="12" ry="10" fill="#0891B2" opacity="0.9"/>
+                    <ellipse cx="74" cy="35" rx="12" ry="10" fill="#0891B2" opacity="0.9"/>
+                    <ellipse cx="26" cy="35" rx="8" ry="6" fill="#67E8F9" opacity="0.4"/>
+                    <ellipse cx="74" cy="35" rx="8" ry="6" fill="#67E8F9" opacity="0.4"/>
+                    <path d="M 38 35 Q 50 32 62 35" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M 0 30 Q -4 24 0 20" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M 100 30 Q 104 24 100 20" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(150, 105) rotate(-8)">
+                    <ellipse cx="40" cy="68" rx="44" ry="5" fill="#4A3A5C" opacity="0.18"/>
+                    <rect x="15" y="6" width="50" height="58" fill="#1F2937" rx="10"/>
+                    <rect x="18" y="9" width="44" height="52" fill="#111827" rx="8"/>
+                    <rect x="22" y="13" width="36" height="44" fill="#059669" rx="5"/>
+                    <rect x="22" y="13" width="36" height="44" fill="#10B981" opacity="0.4" rx="5"/>
+                    <text x="40" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" font-weight="700" fill="#FFFFFF">8,247</text>
+                    <text x="40" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="4" fill="#FFFFFF" opacity="0.85">STEPS</text>
+                    <path d="M 24 44 Q 28 40 32 43 L 36 40 L 40 44 Q 44 42 48 45 L 52 42 L 56 46" stroke="#FFFFFF" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+                    <circle cx="40" cy="54" r="2.5" fill="#FFFFFF" opacity="0.7"/>
+                    <rect x="28" y="0" width="24" height="8" fill="#4B5563" rx="2"/>
+                    <rect x="28" y="62" width="24" height="8" fill="#4B5563" rx="2"/>
+                  </g>
+                  <g transform="translate(570, 160) rotate(-15)" opacity="0.7">
+                    <rect x="0" y="0" width="40" height="24" fill="#FFFFFF" stroke="#7C3AED" stroke-width="0.8" rx="3"/>
+                    <rect x="2" y="2" width="36" height="6" fill="#7C3AED" opacity="0.2" rx="1"/>
+                    <text x="20" y="7" text-anchor="middle" font-family="system-ui, sans-serif" font-size="4" font-weight="600" fill="#5B21B6">REPORT</text>
+                    <path d="M 4 12 L 36 12 M 4 16 L 28 16 M 4 20 L 32 20" stroke="#7C3AED" stroke-width="0.6" opacity="0.5"/>
+                  </g>
+                  <g transform="translate(90, 175) rotate(10)" opacity="0.7">
+                    <rect x="0" y="0" width="40" height="24" fill="#FFFFFF" stroke="#0891B2" stroke-width="0.8" rx="3"/>
+                    <rect x="2" y="2" width="36" height="6" fill="#0891B2" opacity="0.2" rx="1"/>
+                    <text x="20" y="7" text-anchor="middle" font-family="system-ui, sans-serif" font-size="4" font-weight="600" fill="#0E7490">REPORT</text>
+                    <path d="M 4 12 L 36 12 M 4 16 L 30 16 M 4 20 L 28 20" stroke="#0891B2" stroke-width="0.6" opacity="0.5"/>
+                  </g>
+                </svg>
+              </div>
+              <h4>Unlock the real you.</h4>
+              <div class="subhead">500+ reports. One kit. Your genetic blueprint for a better life.</div>
+              <p>VitaGenix tells you things your doctor cannot. Learn what your DNA says about:</p>
+              <ul>
+                <li>Your ideal diet and foods to avoid</li>
+                <li>Your best workout style and fat-loss potential</li>
+                <li>Caffeine sensitivity, alcohol tolerance, sleep patterns</li>
+                <li>Personality traits, risk-taking, even your "dancer gene"</li>
+              </ul>
+              <p style="margin-top:0.5rem"><strong>Premium Kit - <span class="browser-price">$299<small>one-time</small></span></strong></p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'About the test (FAQ)',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">vitagenix.com/faq</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="faq-icon" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 3"/><path d="M12 17h.01"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></span>Frequently asked questions</h4>
+              <p><strong>Are your reports medically approved?</strong><br>VitaGenix reports are for wellness and lifestyle purposes only. They are not medical tests and are not intended to diagnose, treat, cure, or prevent any disease. Our reports are not reviewed by the FDA, Health Canada, or any other health regulator.</p>
+              <p style="margin-top:0.6rem"><strong>Will someone explain my results to me?</strong><br>Premium members receive one complimentary 15-minute video consultation with a VitaGenix wellness advisor. Additional sessions are $89 each. Our wellness advisors are not medical doctors. For medical concerns, please consult your own doctor.</p>
+              <p style="margin-top:0.6rem"><strong>What exactly does the test check?</strong><br>We use whole exome sequencing to read parts of your DNA and run the results through our VitaAI platform, which generates 500+ personalised reports covering topics like caffeine sensitivity, sprinter versus endurance gene profile, sleep chronotype, stress response, and more.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'Privacy policy',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">vitagenix.com/privacy</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="privacy-lock" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Privacy</h4>
+              <p>VitaGenix is based in the United States. Your DNA data is stored in the United States and may be sent to other countries where our partner companies operate.</p>
+              <p>We may share your data with our partner companies for research, product development, and marketing. By using our service, you agree to this.</p>
+              <p>To delete your data, email privacy@vitagenix.com. Deletion can take up to 90 days.</p>
+            </div>
+          </div>
+        `
+      },
+    ]
+  },
+
+  'pharmagene': {
+    name: 'PharmaGene Clinic',
+    url: 'pharmageneclinic.ca',
+    evidence: [
+      {
+        label: 'Homepage',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">pharmageneclinic.ca</div>
+            </div>
+            <div class="browser-body">
+              <div class="hero">
+                <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="0" y="0" width="680" height="340" fill="#E8EEF2"/>
+                  <circle cx="90" cy="60" r="42" fill="#D4DEE8" opacity="0.55"/>
+                  <circle cx="590" cy="55" r="56" fill="#D4DEE8" opacity="0.5"/>
+                  <circle cx="615" cy="275" r="72" fill="#C4D8E4" opacity="0.4"/>
+                  <circle cx="50" cy="260" r="62" fill="#D4E0E0" opacity="0.45"/>
+                  <path d="M 0 295 Q 340 275 680 290 L 680 340 L 0 340 Z" fill="#B8C8D6" opacity="0.4"/>
+                  <g transform="translate(80, 115) rotate(-4)">
+                    <ellipse cx="110" cy="205" rx="125" ry="7" fill="#3A4A5C" opacity="0.12"/>
+                    <rect x="0" y="0" width="220" height="195" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8" rx="3"/>
+                    <rect x="0" y="0" width="220" height="195" fill="#E2E8F0" opacity="0.3" rx="3"/>
+                    <rect x="70" y="-8" width="80" height="24" fill="#64748B" rx="3"/>
+                    <rect x="74" y="-6" width="72" height="20" fill="#475569" rx="2"/>
+                    <circle cx="85" cy="4" r="3" fill="#94A3B8"/>
+                    <circle cx="135" cy="4" r="3" fill="#94A3B8"/>
+                    <rect x="110" y="-2" width="20" height="12" fill="#F1F5F9" rx="1"/>
+                    <g stroke="#CBD5E1" stroke-width="0.5" fill="none" opacity="0.7">
+                      <line x1="15" y1="42" x2="205" y2="42"/>
+                      <line x1="15" y1="58" x2="205" y2="58"/>
+                      <line x1="15" y1="74" x2="205" y2="74"/>
+                      <line x1="15" y1="90" x2="205" y2="90"/>
+                      <line x1="15" y1="106" x2="205" y2="106"/>
+                      <line x1="15" y1="122" x2="205" y2="122"/>
+                      <line x1="15" y1="138" x2="205" y2="138"/>
+                      <line x1="15" y1="154" x2="205" y2="154"/>
+                      <line x1="15" y1="170" x2="205" y2="170"/>
+                    </g>
+                    <rect x="15" y="28" width="60" height="7" fill="#1E293B" rx="1"/>
+                    <rect x="80" y="30" width="40" height="3" fill="#64748B" rx="0.5" opacity="0.6"/>
+                    <path d="M 15 46 Q 35 44 60 46 Q 85 48 110 45 Q 140 44 160 47 Q 180 48 200 46" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 62 Q 35 60 60 62 Q 85 64 115 61 Q 140 60 170 63 Q 185 64 200 62" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 78 Q 35 76 58 78 Q 85 80 108 77" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <rect x="15" y="92" width="12" height="3" fill="#3A6B7D" rx="0.5"/>
+                    <path d="M 32 94 Q 50 92 75 94 Q 100 96 125 93 Q 150 92 175 94 Q 185 94 200 93" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 110 Q 40 108 70 110 Q 100 112 130 109 Q 155 108 180 110 Q 190 110 200 109" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 126 Q 35 124 58 126 Q 80 128 100 125 Q 120 124 140 126" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <rect x="15" y="140" width="10" height="3" fill="#3A6B7D" rx="0.5"/>
+                    <path d="M 30 142 Q 55 140 85 142 Q 115 144 145 141 Q 170 140 195 142" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 158 Q 45 156 80 158 Q 115 160 150 157 Q 175 156 200 158" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <path d="M 15 174 Q 40 172 70 174 Q 95 176 115 173" stroke="#475569" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    <rect x="130" y="168" width="55" height="14" fill="#3A6B7D" opacity="0.12" rx="2"/>
+                    <path d="M 138 175 Q 144 179 148 173 L 158 183" stroke="#3A6B7D" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(340, 145) rotate(6)">
+                    <ellipse cx="40" cy="135" rx="48" ry="5" fill="#3A4A5C" opacity="0.18"/>
+                    <rect x="20" y="18" width="40" height="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8" rx="1"/>
+                    <rect x="22" y="20" width="36" height="4" fill="#CBD5E1" opacity="0.5"/>
+                    <path d="M 10 28 L 70 28 L 65 130 Q 65 134 61 134 L 19 134 Q 15 134 15 130 Z" fill="#F0A5A5"/>
+                    <path d="M 10 28 L 70 28 L 65 130 Q 65 134 61 134 L 19 134 Q 15 134 15 130 Z" fill="#D47878" opacity="0.25"/>
+                    <rect x="20" y="44" width="40" height="32" fill="#FFFFFF"/>
+                    <rect x="20" y="44" width="40" height="32" fill="#F0EAE0" opacity="0.6"/>
+                    <text x="40" y="54" text-anchor="middle" font-family="Georgia, serif" font-size="5.5" font-weight="700" fill="#1E293B">PharmaGene</text>
+                    <line x1="22" y1="58" x2="58" y2="58" stroke="#94A3B8" stroke-width="0.4"/>
+                    <text x="40" y="64" text-anchor="middle" font-family="system-ui, sans-serif" font-size="4" fill="#475569">PGx Panel</text>
+                    <text x="40" y="71" text-anchor="middle" font-family="system-ui, sans-serif" font-size="3.5" fill="#64748B">30 capsules</text>
+                    <g opacity="0.5">
+                      <line x1="22" y1="82" x2="58" y2="82" stroke="#94A3B8" stroke-width="0.3"/>
+                      <line x1="22" y1="88" x2="58" y2="88" stroke="#94A3B8" stroke-width="0.3"/>
+                    </g>
+                    <g fill="#E2C8A8" opacity="0.85">
+                      <ellipse cx="28" cy="102" rx="5" ry="3.5"/>
+                      <ellipse cx="42" cy="100" rx="5" ry="3.5"/>
+                      <ellipse cx="55" cy="104" rx="5" ry="3.5"/>
+                      <ellipse cx="32" cy="114" rx="5" ry="3.5"/>
+                      <ellipse cx="48" cy="116" rx="5" ry="3.5"/>
+                      <ellipse cx="38" cy="125" rx="5" ry="3.5"/>
+                      <ellipse cx="54" cy="126" rx="5" ry="3.5"/>
+                      <ellipse cx="25" cy="126" rx="5" ry="3.5"/>
+                    </g>
+                    <g fill="#B89878" opacity="0.5">
+                      <ellipse cx="28" cy="102" rx="2.5" ry="1.5"/>
+                      <ellipse cx="42" cy="100" rx="2.5" ry="1.5"/>
+                      <ellipse cx="55" cy="104" rx="2.5" ry="1.5"/>
+                    </g>
+                  </g>
+                  <g transform="translate(440, 150)">
+                    <path d="M 20 28 L 20 55 Q 20 68 40 72 Q 55 74 55 82 L 55 95 Q 55 115 75 128 Q 100 142 120 145 Q 140 148 150 160 Q 158 172 148 182" fill="none" stroke="#1E293B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M 90 28 L 90 55 Q 90 68 70 72 Q 55 74 55 82" fill="none" stroke="#1E293B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <ellipse cx="20" cy="24" rx="4.5" ry="6" fill="#1E293B"/>
+                    <ellipse cx="90" cy="24" rx="4.5" ry="6" fill="#1E293B"/>
+                    <circle cx="55" cy="82" r="5" fill="#1E293B"/>
+                    <circle cx="135" cy="188" r="16" fill="#94A3B8" stroke="#1E293B" stroke-width="2.5"/>
+                    <circle cx="135" cy="188" r="11" fill="#475569"/>
+                    <circle cx="135" cy="188" r="6" fill="#1E293B"/>
+                    <circle cx="131" cy="184" r="2.5" fill="#94A3B8" opacity="0.7"/>
+                  </g>
+                  <g transform="translate(100, 95) rotate(-12)" opacity="0.85">
+                    <rect x="0" y="0" width="60" height="12" fill="#FFFFFF" stroke="#3A6B7D" stroke-width="0.6" rx="2"/>
+                    <rect x="2" y="2" width="10" height="8" fill="#3A6B7D" opacity="0.8" rx="1"/>
+                    <text x="7" y="8" text-anchor="middle" font-family="system-ui, sans-serif" font-size="4" font-weight="700" fill="#FFFFFF">Rx</text>
+                    <line x1="16" y1="4" x2="56" y2="4" stroke="#94A3B8" stroke-width="0.4"/>
+                    <line x1="16" y1="7" x2="50" y2="7" stroke="#94A3B8" stroke-width="0.4"/>
+                    <line x1="16" y1="10" x2="44" y2="10" stroke="#94A3B8" stroke-width="0.4"/>
+                  </g>
+                </svg>
+              </div>
+              <h4>Find the medications that work for your body.</h4>
+              <div class="subhead">Pharmacogenomic testing and counselling. From a private clinic in Toronto.</div>
+              <p>Your genes affect how your body processes medications. A pharmacogenomic (PGx) test can help your doctor choose the right medication and the right dose - and avoid ones that may not work for you or cause side effects.</p>
+              <p>Our service includes:</p>
+              <ul>
+                <li>A physician consultation to order your test</li>
+                <li>Testing at an accredited clinical laboratory</li>
+                <li>A 60-minute results session with a <strong>certified genetic counsellor</strong></li>
+                <li>A written report you can share with your family doctor or pharmacist</li>
+              </ul>
+              <p style="margin-top:0.5rem"><strong>Full package - <span class="browser-price">$650<small>one-time, not covered by OHIP</small></span></strong></p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'About the test (FAQ)',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">pharmageneclinic.ca/faq</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="faq-icon" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 3"/><path d="M12 17h.01"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></span>Frequently asked questions</h4>
+              <p><strong>What exactly does the test check?</strong><br>Our pharmacogenomic panel tests more than 25 genes that affect how your body processes common medications - including many antidepressants, blood thinners, some pain medications, and some heart medications. The test does not tell you which medication to take. It tells your doctor which ones are more likely to work well for you.</p>
+              <p style="margin-top:0.6rem"><strong>What are your lab's quality standards and credentials?</strong><br>Your sample is processed at a laboratory accredited by the College of American Pathologists (CAP) and certified under CLIA. Our physicians are licensed by the College of Physicians and Surgeons of Ontario. Our genetic counsellor is certified by the Canadian Association of Genetic Counsellors (CAGC).</p>
+              <p style="margin-top:0.6rem"><strong>Will someone explain my results to me?</strong><br>Yes. About 2-3 weeks after your sample is collected, a certified genetic counsellor will meet with you for a 60-minute session (virtually or in person). Follow-up questions are included for 30 days.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        label: 'Privacy policy',
+        body: `
+          <div class="browser">
+            <div class="browser-bar">
+              <div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+              <div class="browser-url">pharmageneclinic.ca/privacy</div>
+            </div>
+            <div class="browser-body">
+              <h4 style="display:flex;align-items:center"><span class="privacy-lock" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#F2DDD0;border-radius:50%;margin-right:8px;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A3219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Privacy</h4>
+              <p>PharmaGene Clinic is a licensed medical clinic in Ontario. Your DNA results become part of your medical record and are protected under Ontario's health privacy law (called PHIPA).</p>
+              <p>We do not sell your data. We do not share it with research groups or other companies for marketing. Your data stays at our clinic unless you tell us to send it somewhere (like to your family doctor).</p>
+              <p>You can ask for a copy of your data or ask us to delete it at any time.</p>
+            </div>
+          </div>
+        `
+      },
+    ]
+  },
+};
+
+// ── QUESTIONS (5 practical, apply to any real genetic test) ──────────────
+const QUESTIONS = [
+  {
+    id: 'scope',
+    name: 'Is it clear what this test actually tests?',
+    question: 'Can you tell from their website what this test actually tests for?',
+    hint: 'Look for a plain-language list of what is included. If the site is vague or full of marketing language instead of specifics, that is a flag. Real tests tell you clearly what they cover and what they do not.',
+    options: [
+      { value:'good', label:'Yes, I can tell what it tests for', score:1 },
+      { value:'fail', label:'No, the website is vague or full of marketing', score:0 },
+    ],
+  },
+  {
+    id: 'regulator',
+    name: 'Has a government body approved this test?',
+    question: 'Has this test been approved by a government body like Health Canada or the FDA?',
+    hint: 'A <strong>regulator</strong> is a government body that reviews and approves medical tests before they can be sold. In Canada, it is <strong>Health Canada</strong>. In the US, it is the <strong>FDA</strong>. If a test makes health or medical claims, a government body should have approved it first. If the test is only about ancestry, or is clearly labelled "wellness only," approval is not needed - which is fine, as long as that is what the person is looking for. The thing to watch for is a mismatch: the marketing sounds medical, but the fine print says "wellness only." That means people may think they are getting medical information when they are not.',
+    options: [
+      { value:'good', label:'Yes, a government body has approved it, or the website does not make health claims so approval is not needed', score:1 },
+      { value:'fail', label:'No, the website makes health claims but no government body has approved it', score:0 },
+    ],
+  },
+  {
+    id: 'privacy',
+    name: 'What happens to your DNA data?',
+    question: 'Is it clear what happens to your DNA data?',
+    hint: 'Check the privacy policy. The main things to look for: Is your DNA shared with other companies? Can you say no to that sharing? Can you delete your DNA when you are done? If those answers are hard to find, that is itself a red flag.',
+    options: [
+      { value:'good', label:'Yes - it is clear what happens to my DNA, and I am in control', score:1 },
+      { value:'fail', label:'No - my DNA might be shared in ways I cannot fully control', score:0 },
+    ],
+  },
+  {
+    id: 'support',
+    name: 'Is a trained genetics professional included in the price?',
+    question: 'Is a trained genetics professional included in the price?',
+    hint: 'You do not always need a genetics professional to walk you through your results - ancestry or wellness reports usually do not need one. But for some tests, results can be weighty. A <strong>positive result</strong> means the lab found a gene change linked to a disease. It raises the person\'s risk but does not mean they have the disease today. That can be a lot to sit with. A <strong>genetics professional</strong> can explain what a result does and does not mean. A "wellness advisor" or "health coach" is not the same thing. The goal is to know upfront whether a genetics professional is available, so you can choose what fits.',
+    options: [
+      { value:'good', label:'Yes, a genetics professional is included', score:1 },
+      { value:'fail', label:'No, no genetics professional is included', score:0 },
+    ],
+  },
+  {
+    id: 'hype',
+    name: 'Do the promises sound too good to be true?',
+    question: 'When you read their marketing, does it sound realistic - or does it promise too much?',
+    hint: 'Watch out for phrases like "unlock your true potential," "your genetic blueprint," "things your doctor cannot tell you." Real genetic tests are clear about what they can and cannot do. They do not promise to explain your whole personality from a cheek swab.',
+    options: [
+      { value:'good', label:'The marketing sounds realistic', score:1 },
+      { value:'fail', label:'The marketing promises too much', score:0 },
+    ],
+  },
+];
+
+// ── EXPERT RATINGS ────────────────────────────────────────────────────────
+const COMPANY_FACTS = {
+  'genoroots': {
+    scope: { rating:'good', note:'GenoRoots describes what this test is: ancestry-only, checking about 700,000 spots in your DNA, compared against a reference group. They also state that results are estimates rather than definitive answers, and that accuracy can vary depending on your background. The scope and its limits are both stated on the site.' },
+    regulator: {
+      rating:'good',
+      goodLabel:'Yes - the website does not make health claims, so approval is not needed',
+      failLabel:'No - the website makes health claims but no government body has approved it',
+      note:'This test only looks at ancestry, not health. Government bodies like Health Canada or the FDA approve medical tests, so approval is not needed here.'
+    },
+    privacy: { rating:'fail', note:'When you sign up, GenoRoots is already set to share your DNA with drug companies and research groups. You have to go into the settings yourself and turn that off - otherwise it is on. Also, deleting your account does not delete your spit sample. You have to ask for that separately.' },
+    support: { rating:'fail', note:'GenoRoots does not include counselling support. For ancestry-only results, a clinical professional is not usually required to explain regional heritage, so this is often fine for this type of test. However, ancestry tests can sometimes surface unexpected family discoveries (a parent who is not biological, an unknown sibling), and no one from GenoRoots is available to help with that.' },
+    hype: { rating:'good', note:'The marketing describes what the test does: ancestry and relative matching. It does not promise to reveal your "true self," predict your health, or unlock any hidden potential. The claims stay within what an ancestry test can actually deliver.' },
+  },
+  'vitagenix': {
+    scope: { rating:'fail', note:'The site names the technology (whole exome sequencing), but "500+ reports" covers a wide range of topics. Some are supported by established science, others by single small studies. A "dancer gene" report and a health-risk report look the same when listed side by side, making it hard to tell which claims have strong evidence behind them.' },
+    regulator: {
+      rating:'fail',
+      goodLabel:'Yes - a government body has approved the test',
+      failLabel:'No - the website makes health claims but no government body has approved it',
+      note:'VitaGenix sells reports on stress, sleep, caffeine, and fitness - topics that sound medical. But the fine print states that nothing has been reviewed by Health Canada, the FDA, or any other government body. The marketing and the approval status do not match.'
+    },
+    privacy: { rating:'fail', note:'Your DNA data is stored in the United States and may be sent to other countries that work with VitaGenix - the site does not say exactly which countries or which companies. If something goes wrong, it is very hard to enforce your Canadian privacy rights against a foreign company.' },
+    support: { rating:'fail', note:'A "wellness advisor" is not a defined clinical role. They are not genetic counsellors, doctors, or dietitians. VitaGenix sells health-sounding reports (stress, caffeine, fitness) but the only person available to explain them has no medical training. For a wellness-only product that could be fine; here, the marketing leans medical while the support does not.' },
+    hype: { rating:'fail', note:'The marketing uses phrases like "unlock the real you," "your genetic blueprint," and "things your doctor cannot tell you." Current genetics cannot determine personality or full life potential from a DNA sample, so these claims go beyond what the test can actually deliver.' },
+  },
+  'pharmagene': {
+    scope: { rating:'good', note:'PharmaGene names the test (pharmacogenomic panel), the number of genes checked (25+), and the types of medications it applies to (antidepressants, blood thinners, pain medications, heart medications). They also state that the test supports a doctor\'s decision rather than replacing it.' },
+    regulator: {
+      rating:'good',
+      goodLabel:'Yes - this is a medical test, and the credentials (lab, doctors, counsellor) can be verified',
+      failLabel:'No - the website makes health claims but no government body has approved it',
+      note:'The lab has quality certifications that can be looked up. The doctors are licensed by the Ontario physicians college, and the genetic counsellor is certified by the Canadian genetic counsellors association. These are verifiable credentials - the same ones a hospital genetics service would have.'
+    },
+    privacy: { rating:'good', note:'PharmaGene is a licensed Ontario medical clinic, so your DNA data is covered by Ontario\'s health privacy law (PHIPA). That means they need your written consent before sharing your data outside the clinic for non-medical purposes. This is much stronger protection than a mail-order DNA kit.<br><br>That said, privacy law is not bulletproof. A 2025 study by Dr. Sheryl Spithoff and colleagues at Women\'s College Hospital (published in <em>JAMA Network Open</em>) found that some Canadian for-profit primary care clinics were selling de-identified patient data to commercial data brokers and pharmaceutical companies, often without patients\' knowledge. In some cases the clinic was owned by the data broker. It is still worth reading the clinic\'s privacy policy, asking how your data is used, and checking whether the clinic is owned by a larger company.' },
+    support: { rating:'good', note:'A 60-minute session with a certified genetic counsellor is included in the price, plus 30 days of follow-up. For medication-response testing, where results can inform how a doctor prescribes, professional support is built into the package rather than offered as an upsell.' },
+    hype: { rating:'good', note:'The marketing uses cautious, clinical language. It describes what the test can do and what it cannot, and does not use phrases like "unlock your true self." The claims stay within what pharmacogenomic testing can actually deliver.' },
+  },
+};
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+
+  if (id === 's-company') setProgress(0,3);
+  else if (id === 's-evidence') setProgress(1,3);
+  else if (id === 's-questions') { startQuestions(); setProgress(2,3); }
+  else if (id === 's-results') setProgress(3,3);
+}
+
+function setProgress(step, total) {
+  const pct = (step/total)*100;
+  document.getElementById('prog').style.width = pct + '%';
+  const labels = ['Pick a company','Step 1 of 2','Step 2 of 2','Results'];
+  document.getElementById('prog-label').textContent = labels[step] || '';
+}
+
+// ── COMPANY SELECTION ─────────────────────────────────────────────────────
+function selectCompany(id) {
+  state.company = id;
+  state.answers = {};
+  state.currentQ = 0;
+  renderEvidence();
+  goTo('s-evidence');
+}
+
+function renderEvidence() {
+  const co = COMPANIES[state.company];
+  document.getElementById('e-title').textContent = `What does the ${co.name} website say?`;
+  document.getElementById('e-co-name').textContent = co.name;
+
+  // Homepage (first evidence item) renders always-visible above the accordion
+  const homepageEl = document.getElementById('e-homepage');
+  homepageEl.innerHTML = co.evidence[0].body;
+
+  // Remaining items (FAQ, Privacy) go in the accordion
+  const acc = document.getElementById('e-accordion');
+  acc.innerHTML = co.evidence.slice(1).map((item, i) => `
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-num">${i+1}</span>
+        <span class="acc-label">${item.label}</span>
+        <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body">${item.body}</div>
+    </div>
+  `).join('');
+}
+
+function toggleAcc(btn) {
+  const body = btn.nextElementSibling;
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    btn.classList.remove('active');
+  } else {
+    body.classList.add('open');
+    btn.classList.add('active');
+  }
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────────────
+function startQuestions() {
+  state.currentQ = 0;
+  // Populate the collapsible "View the website" section with full evidence
+  const co = COMPANIES[state.company];
+  document.getElementById('q-viewer-label').textContent = `View the ${co.name} website`;
+  const body = document.getElementById('q-viewer-body');
+  body.innerHTML = co.evidence.map((item, i) => `
+    <div style="margin-bottom:${i === co.evidence.length-1 ? '0' : '1rem'}">
+      ${i === 0 ? '' : `<h4 style="font-family:var(--font-d);font-size:1rem;color:var(--rust-d);margin-bottom:0.5rem">${item.label}</h4>`}
+      ${item.body}
+    </div>
+  `).join('');
+  // Collapse it by default each time they arrive
+  document.getElementById('q-viewer').open = false;
+  renderQ();
+}
+
+function renderQ() {
+  const co = COMPANIES[state.company];
+  const facts = COMPANY_FACTS[state.company];
+  const q = QUESTIONS[state.currentQ];
+  const selected = state.answers[q.id];
+  const answered = selected != null;
+  const fact = facts?.[q.id];
+
+  // Compare user answer to what a genetics professional would flag
+  const userAligned = answered && fact && selected === fact.rating;
+  // Feedback box color: green if correct, red if not - NOT tied to the rating severity
+  const fb = { cls: userAligned ? 'fb-good' : 'fb-fail' };
+  const fbHeading = userAligned
+    ? '✓ Correct - here is why'
+    : '✗ Not quite - here is another way to look at it';
+
+  document.getElementById('q-container').innerHTML = `
+    <div class="q-card">
+      <div class="q-num">Question ${state.currentQ+1} of ${QUESTIONS.length}</div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-hint">${q.hint}</div>
+      <div class="q-options">
+        ${q.options.map(o => {
+          // If the company has a company-specific label for this option value, use that
+          const companyLabel = fact?.[o.value === 'good' ? 'goodLabel' : 'failLabel'];
+          const displayLabel = companyLabel || o.label;
+          // After answering, mark the expert-aligned option and (if different) the user's pick
+          let marker = '';
+          let stateCls = '';
+          if (answered && fact) {
+            if (o.value === fact.rating) {
+              marker = '<span class="q-mark q-mark-right">✓</span>';
+              stateCls = 'q-opt-expert';
+            } else if (o.value === selected) {
+              marker = '<span class="q-mark q-mark-wrong">✗</span>';
+              stateCls = 'q-opt-userwrong';
+            }
+          }
+          return `
+          <button class="q-opt ${selected===o.value?'selected':''} ${stateCls}" onclick="selectAnswer('${q.id}','${o.value}')" ${answered ? 'disabled' : ''}>
+            <span class="q-opt-text">${displayLabel}</span>
+            ${marker}
+          </button>`;
+        }).join('')}
+      </div>
+      ${answered && fact ? `
+        <div class="q-feedback ${fb.cls}">
+          <div class="q-feedback-label">${fbHeading}</div>
+          <p>${fact.note}</p>
+        </div>
+      ` : ''}
+    </div>`;
+  const nextBtn = document.getElementById('q-next');
+  nextBtn.disabled = !answered;
+  nextBtn.textContent = state.currentQ === QUESTIONS.length-1 ? 'See summary →' : 'Next →';
+}
+
+function selectAnswer(qid, val) {
+  // Once answered, don't allow changes - feedback is already showing
+  if (state.answers[qid] != null) return;
+  state.answers[qid] = val;
+  renderQ();
+}
+
+function nextQ() {
+  if (state.currentQ < QUESTIONS.length-1) {
+    state.currentQ++;
+    renderQ();
+  } else {
+    showResults();
+  }
+}
+
+function prevQ() {
+  if (state.currentQ > 0) {
+    state.currentQ--;
+    renderQ();
+  } else {
+    goTo('s-evidence');
+  }
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────────────
+function showResults() {
+  const co = COMPANIES[state.company];
+  const facts = COMPANY_FACTS[state.company];
+
+  document.getElementById('r-title').textContent = co.name + ' - your evaluation';
+
+  const ratingMap = {
+    good:{ cls:'check-pass', icon:'✓', label:'Good' },
+    fail:{ cls:'check-fail', icon:'✗', label:'Concern' },
+  };
+
+  const checklistHtml = QUESTIONS.map(q => {
+    const fact = facts?.[q.id];
+    const rm = ratingMap[fact?.rating] || ratingMap['fail'];
+    const userAns = state.answers[q.id];
+    const userOpt = q.options.find(o => o.value === userAns);
+    // Prefer the company-specific label the user actually saw
+    const userLabel = fact?.[userAns === 'good' ? 'goodLabel' : 'failLabel'] || userOpt?.label || '-';
+    return `
+      <div class="check-item ${rm.cls}">
+        <div class="check-top">
+          <div class="check-icon">${rm.icon}</div>
+          <div class="check-body">
+            <div class="check-label">${rm.label}</div>
+            <div class="check-name">${q.name}</div>
+            <div class="check-detail">Your answer: ${userLabel}</div>
+            ${fact?.note ? `<div class="check-what">${fact.note}</div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('r-checklist').innerHTML = checklistHtml;
+
+  // Company-specific takeaways
+  let takeaway = '';
+  if (state.company === 'genoroots') {
+    takeaway = `<h3>Bottom line</h3><p>Ancestry tests like GenoRoots are low health-stakes, which is their main strength. The biggest things to watch for are <strong>privacy</strong> (research sharing is often on by default) and <strong>emotional surprises</strong> (unexpected family discoveries).</p><p style="margin-top:0.75rem">Before you buy any ancestry kit: go into the privacy settings first and decide what you want to share. And think about whether a surprise family discovery would be something you are ready for.</p>`;
+  } else if (state.company === 'vitagenix') {
+    takeaway = `<h3>Bottom line</h3><p>Products like VitaGenix are where genetic testing earns its worst reputation. The marketing promises a lot. The science often does not match.</p><p style="margin-top:0.75rem"><strong>If you want nutrition or fitness advice:</strong> a registered dietitian or a family doctor will give you better guidance than a DNA report. If you are genuinely worried about a health question, skip the kit and ask your doctor - they may be able to arrange proper testing at no cost.</p>`;
+  } else if (state.company === 'pharmagene') {
+    takeaway = `<h3>Before you pay out of pocket</h3><p>PharmaGene Clinic is a real clinical service and the quality is very different from a mail-order kit. But that does not automatically mean it is the right choice for you right now.</p><p style="margin-top:0.75rem"><strong>Ask your family doctor or pharmacist first:</strong> pharmacogenomic testing is sometimes available through the public healthcare system, through pharmacies, or through your drug benefits plan. Many people assume they would not qualify or that the service does not exist. A short conversation could save you hundreds of dollars. If you cannot access it publicly, a clinic like this is a legitimate option.</p>`;
+  }
+  document.getElementById('r-takeaway').innerHTML = takeaway;
+
+  const CHECKLIST_ITEMS = [
+    { text: '<strong>Is it clear what this test actually tests?</strong> Look for a plain-language list of what is included. Vague marketing is a flag.' },
+    { text: '<strong>Has a government body approved it?</strong> Look for "Health Canada" or "FDA" on the site. If the marketing sounds medical but no government body has approved the test, that is a gap worth noticing.' },
+    { text: '<strong>What happens to your DNA data?</strong> Read the privacy policy. Is sharing on by default? Can you delete your data and your sample? Where is the company based?' },
+    { text: '<strong>Is a trained genetics professional included?</strong> You do not always need one, but know upfront whether a genetics professional is available. A "wellness advisor" or FAQ page is not the same thing - and for some kinds of testing, real professional support matters.' },
+    { text: '<strong>Do the promises sound too good to be true?</strong> Watch for phrases like "unlock your true potential" or "your genetic blueprint." Real tests are cautious about what they claim.' },
+    { text: '<strong>Could you get this through the public system instead?</strong> For health questions, ask your family doctor. Many people qualify for public testing and do not know it.' },
+  ];
+  document.getElementById('gcl-items').innerHTML = CHECKLIST_ITEMS.map(item => `
+    <div class="gcl-item">
+      <div class="gcl-box"></div>
+      <div class="gcl-text">${item.text}</div>
+    </div>`).join('');
+
+  goTo('s-results');
+}
+
+function restart() {
+  state = { company:null, answers:{}, currentQ:0 };
+  goTo('s-company');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setProgress(0,3);
+});
+</script>
+</body>
+</html>
